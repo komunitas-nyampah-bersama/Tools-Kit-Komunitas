@@ -1,0 +1,941 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Glide Tools Suite — Generator Link + Arsip Dokumen</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- Tambahkan library untuk PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --bg:#f7f7fb; --card:#fff; --border:#e6e6ef; --text:#111827; --muted:#6b7280;
+    --brand:#4f46e5; --brand2:#06b6d4; --danger:#f43f5e; --ok:#22c55e;
+    --transition: all 0.3s ease;
+  }
+  .dark-mode {
+    --bg:#1f2937; --card:#374151; --border:#4b5563; --text:#f9fafb; --muted:#9ca3af;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;transition:var(--transition)}
+  header{padding:20px 14px;text-align:center;background:linear-gradient(90deg,var(--brand),var(--brand2));color:#fff}
+  header h1{margin:0 0 6px;font-size:22px}
+  header p{margin:0;opacity:.9}
+  .wrap{max-width:1200px;margin:0 auto;padding:12px}
+  .tabs{display:flex;gap:10px;margin:10px 0 14px}
+  .tab{flex:1;padding:12px;border:1px solid var(--border);background:var(--card);border-radius:10px;cursor:pointer;text-align:center;font-weight:700;transition:var(--transition)}
+  .tab.active{background:var(--brand);color:#fff;border-color:transparent}
+  .panel{display:none;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;transition:var(--transition)}
+  .panel.active{display:block;animation:fadeIn 0.3s ease}
+  .box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px;transition:var(--transition)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  textarea{width:100%;min-height:120px;padding:10px;border:1px solid var(--border);border-radius:10px;font-family:ui-monospace,monospace;background:var(--card);color:var(--text);transition:var(--transition)}
+  input[type="text"], input[type="file"], select{padding:10px 12px;border:1px solid var(--border);border-radius:10px;flex:1;min-width:140px;background:var(--card);color:var(--text);transition:var(--transition)}
+  .btn{padding:10px 12px;border:1px solid var(--border);background:var(--card);border-radius:10px;cursor:pointer;transition:var(--transition)}
+  .btn:hover{opacity:0.9;transform:translateY(-1px)}
+  .btn.brand{background:var(--brand);color:#fff;border-color:transparent}
+  .btn.ok{background:var(--ok);color:#fff;border-color:transparent}
+  .btn.danger{background:var(--danger);color:#fff;border-color:transparent}
+  table{width:100%;border-collapse:collapse}
+  th,td{border-top:1px solid var(--border);padding:8px;vertical-align:top}
+  th{background:var(--bg);text-align:left;font-size:12px}
+  td input{width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text)}
+  .mono{font-family:ui-monospace,monospace;font-size:12px}
+  .scroll{overflow:auto;max-height:60vh}
+  .muted{color:var(--muted);font-size:12px}
+  /* viewer */
+  .viewer{height:500px;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .viewer iframe{width:100%;height:100%;border:0}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+  figure{margin:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card);display:flex;flex-direction:column;transition:var(--transition);cursor:pointer}
+  figure:hover{transform:translateY(-3px);box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+  figure img{width:100%;height:160px;object-fit:cover;background:#eee;transition:var(--transition)}
+  figcaption{padding:10px 12px 6px;font-weight:700}
+  .meta{padding:0 12px 12px;color:var(--muted);font-size:12px}
+  .chip{border:1px solid var(--border);padding:2px 8px;border-radius:999px;background:var(--bg);margin-right:6px;display:inline-block;margin-bottom:4px}
+  /* utilities */
+  .theme-toggle{position:fixed;bottom:20px;right:20px;width:50px;height:50px;border-radius:50%;background:var(--brand);color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,0.2);z-index:100;border:none}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card);color:var(--text);padding:12px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:1000;display:flex;align-items:center;gap:10px;animation:slideUp 0.3s ease}
+  .toast.success{border-left:4px solid var(--ok)}
+  .toast.error{border-left:4px solid var(--danger)}
+  .loader{display:inline-block;width:20px;height:20px;border:3px solid rgba(255,255,255,0.3);border-radius:50%;border-top-color:white;animation:spin 1s ease-in-out infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes fadeIn{from{opacity:0} to{opacity:1}}
+  @keyframes slideUp{from{transform:translate(-50%, 100px); opacity:0} to{transform:translate(-50%, 0); opacity:1}}
+  /* responsive */
+  @media (max-width:768px){
+    .tabs{flex-direction:column}
+    .row{flex-direction:column;align-items:stretch}
+    .viewer{height:300px}
+  }
+  /* image modal */
+  .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center}
+  .modal.active{display:flex;animation:fadeIn 0.3s ease}
+  .modal-content{max-width:90%;max-height:90%;object-fit:contain}
+  .modal-close{position:absolute;top:20px;right:20px;color:white;font-size:30px;cursor:pointer}
+  /* PDF export modal */
+  .pdf-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center}
+  .pdf-modal.active{display:flex;animation:fadeIn 0.3s ease}
+  .pdf-modal-content{background:var(--card);padding:20px;border-radius:12px;max-width:500px;width:90%}
+  .pdf-modal h3{margin-top:0}
+  .pdf-modal-options{display:flex;flex-direction:column;gap:12px;margin:16px 0}
+  .pdf-modal-options label{display:flex;align-items:center;gap:8px}
+  .pdf-modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Glide Tools Suite</h1>
+  <p>Generator Link Google Drive → Glide + Arsip PDF/Excel dengan Viewer</p>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <div class="tab active" data-tab="gen"><i class="fa-solid fa-link"></i> Generator Link</div>
+    <div class="tab" data-tab="gallery"><i class="fa-solid fa-images"></i> Galeri dari CSV</div>
+    <div class="tab" data-tab="arsip"><i class="fa-solid fa-box-archive"></i> Arsip PDF/Excel</div>
+  </div>
+
+  <!-- PANEL 1: GENERATOR -->
+  <section class="panel active" id="gen">
+    <div class="box">
+      <div class="row">
+        <textarea id="src" placeholder="Tempel link Google Drive (satu baris per link). Boleh juga format: Nama, LINK"></textarea>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <input id="prefix" type="text" placeholder="Prefix Nama (opsional)">
+        <input id="kelas" type="text" placeholder="Kelas (opsional)">
+        <input id="angkatan" type="text" placeholder="Angkatan (opsional)">
+        <button class="btn brand" id="genBtn">Generate</button>
+        <button class="btn" id="clearGen">Clear</button>
+        <button class="btn" id="copyCSV">Copy CSV</button>
+        <button class="btn ok" id="dlCSV">Download CSV</button>
+        <button class="btn" id="importJSON">Import JSON</button>
+        <button class="btn" id="exportJSON">Export JSON</button>
+      </div>
+      <div class="muted" style="margin-top:6px">Regex File ID: <code>[-\w]{25,}</code>. Kolom hasil: Nama, Link Asli, File ID, View, Direct, Thumb, Angkatan, Kelas, Catatan.</div>
+    </div>
+    <div class="box scroll">
+      <table id="genTbl">
+        <thead><tr>
+          <th>#</th><th>Nama</th><th>Link Drive Asli</th><th>File ID</th><th>View Link</th><th>Direct Link</th><th>Thumbnail Link</th><th>Angkatan</th><th>Kelas</th><th>Catatan</th><th>Aksi</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- PANEL 2: GALLERY -->
+  <section class="panel" id="gallery">
+    <div class="box">
+      <div class="row">
+        <input id="csvUrl" placeholder="Tempel URL CSV (Sheets → Publish to web → CSV)">
+        <input id="q" placeholder="Cari nama…">
+        <select id="angkSel"><option value="">Semua Angkatan</option></select>
+        <select id="kelasSel"><option value="">Semua Kelas</option></select>
+        <button class="btn brand" id="loadCSV">Muat</button>
+        <button class="btn" id="clearGalleryCache">Bersihkan Cache</button>
+        <button class="btn danger" id="exportPDF"><i class="fas fa-file-pdf"></i> Ekspor PDF</button>
+      </div>
+    </div>
+    <div class="box">
+      <div class="grid" id="grid"></div>
+    </div>
+    <div class="box viewer">
+      <iframe id="viewer" src=""></iframe>
+    </div>
+  </section>
+
+  <!-- PANEL 3: ARSIP -->
+  <section class="panel" id="arsip">
+    <div class="box">
+      <div class="row">
+        <input id="docUrl" placeholder="https://contoh.com/file.pdf">
+        <select id="docType">
+          <option value="pdf">PDF</option>
+          <option value="excel">Excel</option>
+        </select>
+        <input type="file" id="docFile" accept=".pdf,.xlsx,.xls">
+        <button class="btn brand" id="addUrl">Tambah dari URL</button>
+        <button class="btn ok" id="addFile">Unggah File</button>
+        <button class="btn danger" id="clrArsip">Hapus Semua</button>
+        <button class="btn" id="exportArsip">Ekspor Data</button>
+        <button class="btn" id="importArsip">Impor Data</button>
+      </div>
+    </div>
+    <div class="box">
+      <div class="grid" id="arsipList"></div>
+    </div>
+    <div class="box viewer" id="arsipViewerBox">
+      <iframe id="arsipViewer" src=""></iframe>
+    </div>
+  </section>
+</div>
+
+<!-- Image Modal -->
+<div class="modal" id="imageModal">
+  <span class="modal-close" id="modalClose">&times;</span>
+  <img class="modal-content" id="modalImage">
+</div>
+
+<!-- PDF Export Modal -->
+<div class="pdf-modal" id="pdfModal">
+  <div class="pdf-modal-content">
+    <h3><i class="fas fa-file-pdf"></i> Ekspor ke PDF</h3>
+    <div class="pdf-modal-options">
+      <label>
+        <input type="checkbox" id="includeNames" checked>
+        Sertakan nama file
+      </label>
+      <label>
+        <input type="checkbox" id="includeMetadata" checked>
+        Sertakan metadata (angkatan, kelas, catatan)
+      </label>
+      <label>
+        <input type="number" id="imagesPerPage" min="1" max="10" value="4" style="width: 60px;">
+        Jumlah gambar per halaman
+      </label>
+      <label>
+        <input type="text" id="pdfFilename" placeholder="Nama file PDF" value="Galeri Export" style="flex: 1;">
+        Nama file PDF
+      </label>
+    </div>
+    <div class="pdf-modal-actions">
+      <button class="btn" id="cancelPdf">Batal</button>
+      <button class="btn danger" id="generatePdf">Buat PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- Theme Toggle Button -->
+<button class="theme-toggle" id="themeToggle">
+  <i class="fas fa-moon"></i>
+</button>
+
+<script>
+// ==== Konfigurasi dan State Aplikasi ====
+const APP_CONFIG = {
+  theme: localStorage.getItem('theme') || 'light',
+  lastActiveTab: localStorage.getItem('lastActiveTab') || 'gen'
+};
+
+// ==== Inisialisasi Tema ====
+function initTheme() {
+  if (APP_CONFIG.theme === 'dark') {
+    document.body.classList.add('dark-mode');
+    document.getElementById('themeToggle').innerHTML = '<i class="fas fa-sun"></i>';
+  } else {
+    document.body.classList.remove('dark-mode');
+    document.getElementById('themeToggle').innerHTML = '<i class="fas fa-moon"></i>';
+  }
+}
+
+// ==== Toggle Tema ====
+document.getElementById('themeToggle').addEventListener('click', () => {
+  if (document.body.classList.contains('dark-mode')) {
+    document.body.classList.remove('dark-mode');
+    localStorage.setItem('theme', 'light');
+    document.getElementById('themeToggle').innerHTML = '<i class="fas fa-moon"></i>';
+  } else {
+    document.body.classList.add('dark-mode');
+    localStorage.setItem('theme', 'dark');
+    document.getElementById('themeToggle').innerHTML = '<i class="fas fa-sun"></i>';
+  }
+});
+
+// ==== Toast Notifikasi ====
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    ${type === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-circle"></i>'}
+    <span>${message}</span>
+  `;
+  
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
+
+// ==== tabs ====
+function initTabs() {
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    const tabId = t.dataset.tab;
+    document.getElementById(tabId).classList.add('active');
+    localStorage.setItem('lastActiveTab', tabId);
+  }));
+
+  // Set last active tab if available
+  if (APP_CONFIG.lastActiveTab) {
+    document.querySelector(`.tab[data-tab="${APP_CONFIG.lastActiveTab}"]`).click();
+  }
+}
+
+// ==== Image Modal ====
+function initImageModal() {
+  const modal = document.getElementById('imageModal');
+  const modalImage = document.getElementById('modalImage');
+  const modalClose = document.getElementById('modalClose');
+  
+  // Close modal when clicking on X
+  modalClose.addEventListener('click', () => {
+    modal.classList.remove('active');
+  });
+  
+  // Close modal when clicking outside image
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.remove('active');
+    }
+  });
+  
+  // Open modal when clicking on gallery images
+  document.addEventListener('click', (e) => {
+    if (e.target.tagName === 'IMG' && e.target.closest('figure')) {
+      modalImage.src = e.target.src;
+      modal.classList.add('active');
+    }
+  });
+}
+
+// ==== GENERATOR ====
+const reId = /[-\w]{25,}/;
+const genBody = document.querySelector('#genTbl tbody');
+
+function parseLines(text) {
+  return text.split(/\r?\n/).map(x => x.trim()).filter(Boolean).map(line => {
+    let name = '', link = line;
+    const m = line.match(/^([^,;]+)[,;]\s*(https?:\/\/\S+)/i);
+    if (m) { name = m[1].trim(); link = m[2].trim(); }
+    return { name, link };
+  });
+}
+
+function extractId(url) { const m = url.match(reId); return m ? m[0] : ''; }
+function viewLink(id) { return id ? `https://drive.google.com/file/d/${id}/view?usp=sharing` : ''; }
+function directLink(id) { return id ? `https://drive.google.com/uc?export=view&id=${id}` : ''; }
+function thumbLink(id) { return id ? `https://drive.google.com/thumbnail?id=${id}&sz=w800` : ''; }
+
+function recomputeRow(tr) {
+  const link = tr.querySelector('input[data-f="link"]').value.trim();
+  const id = extractId(link);
+  tr.querySelector('[data-f="id"]').textContent = id;
+  tr.querySelector('[data-f="view"]').textContent = viewLink(id);
+  tr.querySelector('[data-f="direct"]').textContent = directLink(id);
+  tr.querySelector('[data-f="thumb"]').textContent = thumbLink(id);
+}
+
+function addRow(obj, index = null) {
+  const idx = index !== null ? index : genBody.children.length + 1;
+  const tr = document.createElement('tr');
+  tr.setAttribute('data-id', Date.now() + Math.random().toString(36).substr(2, 5));
+  tr.innerHTML = `
+    <td class="mono">${idx}</td>
+    <td><input data-f="nama" value="${(document.getElementById('prefix').value || '') + (obj.name || '')}"></td>
+    <td><input data-f="link" value="${obj.link || ''}"></td>
+    <td class="mono" data-f="id"></td>
+    <td class="mono" data-f="view"></td>
+    <td class="mono" data-f="direct"></td>
+    <td class="mono" data-f="thumb"></td>
+    <td><input data-f="angkatan" value="${obj.angkatan || document.getElementById('angkatan').value || ''}"></td>
+    <td><input data-f="kelas" value="${obj.kelas || document.getElementById('kelas').value || ''}"></td>
+    <td><input data-f="catatan" value="${obj.catatan || ''}"></td>
+    <td><button class="btn danger" data-action="delete"><i class="fas fa-trash"></i></button></td>`;
+  genBody.appendChild(tr);
+  ['input', 'change'].forEach(ev => {
+    tr.querySelectorAll('input').forEach(i => i.addEventListener(ev, () => recomputeRow(tr)));
+  });
+  
+  // Add delete row functionality
+  tr.querySelector('[data-action="delete"]').addEventListener('click', () => {
+    tr.remove();
+    renumberTable();
+    showToast('Baris dihapus', 'success');
+  });
+  
+  recomputeRow(tr);
+  return tr;
+}
+
+function renumberTable() {
+  Array.from(genBody.children).forEach((tr, idx) => {
+    tr.querySelector('td:first-child').textContent = idx + 1;
+  });
+}
+
+function tableToCSV() {
+  const rows = [['Nama', 'Link Drive Asli', 'File ID', 'View Link', 'Direct Link', 'Thumbnail Link', 'Angkatan', 'Kelas', 'Catatan']];
+  Array.from(genBody.children).forEach(tr => {
+    const g = f => tr.querySelector(`[data-f="${f}"]`);
+    rows.push([
+      g('nama').value,
+      g('link').value,
+      tr.querySelector('[data-f="id"]').textContent,
+      tr.querySelector('[data-f="view"]').textContent,
+      tr.querySelector('[data-f="direct"]').textContent,
+      tr.querySelector('[data-f="thumb"]').textContent,
+      g('angkatan').value,
+      g('kelas').value,
+      g('catatan').value
+    ]);
+  });
+  return rows.map(r => r.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',')).join('\n');
+}
+
+function tableToJSON() {
+  const data = [];
+  Array.from(genBody.children).forEach(tr => {
+    const g = f => tr.querySelector(`[data-f="${f}"]`);
+    data.push({
+      nama: g('nama').value,
+      link: g('link').value,
+      fileId: tr.querySelector('[data-f="id"]').textContent,
+      viewLink: tr.querySelector('[data-f="view"]').textContent,
+      directLink: tr.querySelector('[data-f="direct"]').textContent,
+      thumbLink: tr.querySelector('[data-f="thumb"]').textContent,
+      angkatan: g('angkatan').value,
+      kelas: g('kelas').value,
+      catatan: g('catatan').value
+    });
+  });
+  return JSON.stringify(data, null, 2);
+}
+
+function importFromJSON(jsonData) {
+  try {
+    const data = JSON.parse(jsonData);
+    if (!Array.isArray(data)) throw new Error('Format JSON tidak valid');
+    
+    genBody.innerHTML = '';
+    data.forEach((item, index) => {
+      addRow({
+        name: item.nama,
+        link: item.link,
+        angkatan: item.angkatan,
+        kelas: item.kelas,
+        catatan: item.catatan
+      }, index + 1);
+    });
+    showToast('Data berhasil diimpor', 'success');
+  } catch (error) {
+    showToast('Gagal mengimpor data: ' + error.message, 'error');
+  }
+}
+
+// Event listeners for Generator
+document.getElementById('genBtn').addEventListener('click', () => {
+  const rows = parseLines(document.getElementById('src').value);
+  if (!rows.length) { showToast('Tempel minimal satu link dulu ya.', 'error'); return; }
+  genBody.innerHTML = ''; 
+  rows.forEach(addRow);
+  showToast(`${rows.length} link berhasil digenerate`, 'success');
+});
+
+document.getElementById('clearGen').addEventListener('click', () => {
+  document.getElementById('src').value = ''; 
+  genBody.innerHTML = '';
+  showToast('Data dibersihkan', 'success');
+});
+
+document.getElementById('dlCSV').addEventListener('click', () => {
+  const csv = tableToCSV();
+  const a = document.createElement('a'); 
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+  a.download = 'drive_links.csv'; 
+  a.click();
+  showToast('CSV berhasil diunduh', 'success');
+});
+
+document.getElementById('copyCSV').addEventListener('click', async () => {
+  const csv = tableToCSV(); 
+  try {
+    await navigator.clipboard.writeText(csv); 
+    showToast('CSV tersalin ke clipboard', 'success');
+  } catch (e) {
+    showToast('Gagal menyalin CSV', 'error');
+  }
+});
+
+document.getElementById('exportJSON').addEventListener('click', () => {
+  const json = tableToJSON();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+  a.download = 'drive_links.json';
+  a.click();
+  showToast('JSON berhasil diunduh', 'success');
+});
+
+document.getElementById('importJSON').addEventListener('click', () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = event => {
+      importFromJSON(event.target.result);
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+});
+
+// ==== GALLERY dari CSV ====
+const grid = document.getElementById('grid');
+const vIframe = document.getElementById('viewer');
+const q = document.getElementById('q');
+const selA = document.getElementById('angkSel');
+const selK = document.getElementById('kelasSel');
+let DATA = [];
+
+// Debounce function untuk pencarian
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+async function loadCSV(url) {
+  // Cek cache pertama
+  const cacheKey = `csv_cache_${btoa(url)}`;
+  const cachedData = localStorage.getItem(cacheKey);
+  if (cachedData) {
+    return JSON.parse(cachedData);
+  }
+  
+  const res = await fetch(url); 
+  if (!res.ok) throw new Error('Gagal memuat CSV'); 
+  const text = await res.text(); 
+  const data = parseCSV(text);
+  
+  // Simpan ke cache
+  localStorage.setItem(cacheKey, JSON.stringify(data));
+  return data;
+}
+
+function parseCSV(text) {
+  const rows = []; 
+  let row = []; 
+  let cur = ''; 
+  let inQ = false;
+  for (let i = 0; i < text.length; i++) { 
+    const c = text[i], n = text[i + 1];
+    if (inQ) { 
+      if (c == '"' && n == '"') { cur += '"'; i++; } 
+      else if (c == '"') { inQ = false; } 
+      else cur += c; 
+    } else { 
+      if (c == '"') { inQ = true; } 
+      else if (c == ',') { row.push(cur); cur = ''; }
+      else if (c == '\n' || c == '\r') { 
+        if (cur !== '' || (c == '\n' && text[i - 1] == ',')) row.push(cur); 
+        if (row.length) { rows.push(row) } 
+        row = []; 
+        cur = ''; 
+        if (c == '\r' && n == '\n') i++; 
+      } else cur += c; 
+    } 
+  }
+  if (cur.length || row.length) { row.push(cur); rows.push(row); }
+  const header = rows.shift().map(h => h.trim());
+  return rows.filter(r => r.some(x => x && x.trim().length)).map(r => {
+    const o = {}; 
+    header.forEach((h, idx) => o[h] = (r[idx] || '').trim()); 
+    return o;
+  });
+}
+
+function uniq(a) { return Array.from(new Set(a.filter(Boolean))); }
+
+function renderGallery() {
+  const qq = (q.value || '').toLowerCase(); 
+  const fa = selA.value; 
+  const fk = selK.value;
+  const filtered = DATA.filter(d => 
+    (!qq || (d['Nama'] || '').toLowerCase().includes(qq)) && 
+    (!fa || d['Angkatan'] === fa) && 
+    (!fk || d['Kelas'] === fk)
+  );
+  
+  grid.innerHTML = filtered.map(d => {
+    const name = d['Nama'] || ''; 
+    const img = d['Thumbnail Link'] || d['Thumb URL'] || d['Image URL'] || ''; 
+    const full = d['Direct Link'] || d['Image URL'] || img;
+    const chips = [
+      d['Angkatan'] ? ('Angkatan ' + d['Angkatan']) : '', 
+      d['Kelas'] ? ('Kelas ' + d['Kelas']) : '', 
+      d['Catatan'] || ''
+    ].filter(Boolean).map(x => `<span class="chip">${x}</span>`).join(' ');
+    
+    return `
+      <figure data-full="${full}">
+        <img loading="lazy" src="${img}" alt="${name}" onerror="this.src='https://via.placeholder.com/800x600/eee/999?text=Gambar+Tidak+Tersedia'">
+        <figcaption>${name}</figcaption>
+        <div class="meta">${chips}</div>
+      </figure>`;
+  }).join('');
+  
+  grid.querySelectorAll('figure').forEach(f => {
+    f.addEventListener('click', () => { 
+      vIframe.src = f.dataset.full; 
+    });
+  });
+  
+  // Show result count
+  const resultInfo = document.createElement('div');
+  resultInfo.className = 'muted';
+  resultInfo.style.marginTop = '10px';
+  resultInfo.textContent = `Menampilkan ${filtered.length} dari ${DATA.length} item`;
+  grid.parentNode.appendChild(resultInfo);
+}
+
+document.getElementById('loadCSV').addEventListener('click', async () => {
+  const url = document.getElementById('csvUrl').value.trim();
+  if (!url) {
+    showToast('URL CSV tidak boleh kosong', 'error');
+    return;
+  }
+  
+  try { 
+    // Show loading
+    const loadBtn = document.getElementById('loadCSV');
+    const originalText = loadBtn.innerHTML;
+    loadBtn.innerHTML = '<div class="loader"></div> Memuat...';
+    loadBtn.disabled = true;
+    
+    DATA = await loadCSV(url); 
+    selA.innerHTML = '<option value="">Semua Angkatan</option>' + 
+      uniq(DATA.map(d => d['Angkatan'])).map(x => `<option>${x}</option>`).join(''); 
+    selK.innerHTML = '<option value="">Semua Kelas</option>' + 
+      uniq(DATA.map(d => d['Kelas'])).map(x => `<option>${x}</option>`).join(''); 
+    renderGallery(); 
+    showToast(`Data berhasil dimuat: ${DATA.length} item`, 'success');
+  } catch (e) { 
+    showToast('Gagal memuat CSV: ' + e.message, 'error');
+  } finally {
+    // Restore button
+    const loadBtn = document.getElementById('loadCSV');
+    loadBtn.innerHTML = originalText;
+    loadBtn.disabled = false;
+  }
+});
+
+document.getElementById('clearGalleryCache').addEventListener('click', () => {
+  // Hapus semua cache CSV
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith('csv_cache_')) {
+      localStorage.removeItem(key);
+    }
+  });
+  showToast('Cache galeri dibersihkan', 'success');
+});
+
+[q, selA, selK].forEach(el => el.addEventListener('input', debounce(renderGallery, 300)));
+
+// ==== PDF Export Functionality ====
+const pdfModal = document.getElementById('pdfModal');
+const cancelPdfBtn = document.getElementById('cancelPdf');
+const generatePdfBtn = document.getElementById('generatePdf');
+const exportPdfBtn = document.getElementById('exportPDF');
+
+// Open PDF modal
+exportPdfBtn.addEventListener('click', () => {
+  if (grid.querySelectorAll('figure').length === 0) {
+    showToast('Tidak ada gambar untuk diekspor', 'error');
+    return;
+  }
+  pdfModal.classList.add('active');
+});
+
+// Close PDF modal
+cancelPdfBtn.addEventListener('click', () => {
+  pdfModal.classList.remove('active');
+});
+
+// Close modal when clicking outside
+pdfModal.addEventListener('click', (e) => {
+  if (e.target === pdfModal) {
+    pdfModal.classList.remove('active');
+  }
+});
+
+// Generate PDF
+generatePdfBtn.addEventListener('click', async () => {
+  pdfModal.classList.remove('active');
+  
+  const includeNames = document.getElementById('includeNames').checked;
+  const includeMetadata = document.getElementById('includeMetadata').checked;
+  const imagesPerPage = parseInt(document.getElementById('imagesPerPage').value) || 4;
+  const filename = document.getElementById('pdfFilename').value || 'Galeri Export';
+  
+  const figures = Array.from(grid.querySelectorAll('figure'));
+  if (figures.length === 0) {
+    showToast('Tidak ada gambar untuk diekspor', 'error');
+    return;
+  }
+  
+  // Show loading
+  const originalText = exportPdfBtn.innerHTML;
+  exportPdfBtn.innerHTML = '<div class="loader"></div> Membuat PDF...';
+  exportPdfBtn.disabled = true;
+  
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 15;
+    const contentWidth = pageWidth - (margin * 2);
+    
+    let currentY = margin;
+    let imageCount = 0;
+    
+    for (let i = 0; i < figures.length; i++) {
+      const figure = figures[i];
+      const imgElement = figure.querySelector('img');
+      const caption = figure.querySelector('figcaption').textContent;
+      const meta = figure.querySelector('.meta').textContent;
+      
+      // Add new page if needed
+      if (imageCount >= imagesPerPage) {
+        doc.addPage();
+        currentY = margin;
+        imageCount = 0;
+      }
+      
+      // Add image
+      try {
+        const canvas = await html2canvas(imgElement, { 
+          useCORS: true,
+          scale: 0.8
+        });
+        
+        const imgData = canvas.toDataURL('image/jpeg', 0.8);
+        const imgHeight = (canvas.height * contentWidth) / canvas.width;
+        
+        // Check if we need a new page for this image
+        if (currentY + imgHeight > pageHeight - margin) {
+          doc.addPage();
+          currentY = margin;
+          imageCount = 0;
+        }
+        
+        doc.addImage(imgData, 'JPEG', margin, currentY, contentWidth, imgHeight);
+        currentY += imgHeight + 5;
+        
+        // Add caption and metadata if enabled
+        if (includeNames || includeMetadata) {
+          let text = '';
+          if (includeNames) text += caption;
+          if (includeNames && includeMetadata) text += ' - ';
+          if (includeMetadata) text += meta;
+          
+          if (text) {
+            // Split text to fit page width
+            const splitText = doc.splitTextToSize(text, contentWidth);
+            doc.setFontSize(10);
+            doc.text(splitText, margin, currentY);
+            currentY += splitText.length * 5 + 10;
+          }
+        } else {
+          currentY += 5;
+        }
+        
+        imageCount++;
+      } catch (error) {
+        console.error('Error processing image:', error);
+        // Add error message
+        doc.setFontSize(10);
+        doc.text(`Error loading image: ${caption}`, margin, currentY);
+        currentY += 10;
+      }
+    }
+    
+    // Save PDF
+    doc.save(`${filename}.pdf`);
+    showToast('PDF berhasil dibuat', 'success');
+  } catch (error) {
+    console.error('Error creating PDF:', error);
+    showToast('Gagal membuat PDF: ' + error.message, 'error');
+  } finally {
+    // Restore button
+    exportPdfBtn.innerHTML = originalText;
+    exportPdfBtn.disabled = false;
+  }
+});
+
+// ==== ARSIP ====
+const KEY = 'arsipDocs'; 
+let ARSIP = JSON.parse(localStorage.getItem(KEY) || '[]');
+const arsipList = document.getElementById('arsipList'); 
+const aUrl = document.getElementById('docUrl'); 
+const aType = document.getElementById('docType'); 
+const aFile = document.getElementById('docFile'); 
+const aView = document.getElementById('arsipViewer');
+
+function saveArsip() { 
+  localStorage.setItem(KEY, JSON.stringify(ARSIP)); 
+}
+
+function renderArsip() {
+  arsipList.innerHTML = ARSIP.length ? '' : '<div class="muted">Belum ada dokumen.</div>';
+  ARSIP.forEach((d, i) => {
+    const card = document.createElement('div'); 
+    card.className = 'box'; 
+    card.innerHTML = `
+      <div class="row">
+        <div style="flex:1">
+          <b>${d.name || '(tanpa nama)'}</b>
+          <div class="muted">${d.type.toUpperCase()} • ${new Date(d.addedDate || Date.now()).toLocaleDateString('id-ID')}</div>
+        </div>
+        <button class="btn" data-i="${i}" data-act="open">Buka</button>
+        <button class="btn danger" data-i="${i}" data-act="del">Hapus</button>
+      </div>`;
+    arsipList.appendChild(card);
+  });
+  
+  arsipList.querySelectorAll('button').forEach(b => b.addEventListener('click', e => {
+    const i = +b.dataset.i, act = b.dataset.act;
+    if (act === 'open') { 
+      aView.src = ARSIP[i].url; 
+      document.querySelector('.tab[data-tab="arsip"]').click(); 
+    } else { 
+      if (ARSIP[i].local) { URL.revokeObjectURL(ARSIP[i].url); } 
+      ARSIP.splice(i, 1); 
+      saveArsip(); 
+      renderArsip(); 
+      showToast('Dokumen dihapus', 'success');
+    }
+  }));
+}
+
+function exportArsipData() {
+  const data = ARSIP.map(d => ({
+    name: d.name,
+    type: d.type,
+    url: d.local ? '' : d.url, // Exclude local URLs
+    addedDate: d.addedDate
+  }));
+  
+  const json = JSON.stringify(data, null, 2);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+  a.download = 'arsip_dokumen.json';
+  a.click();
+  showToast('Data arsip diekspor', 'success');
+}
+
+function importArsipData(jsonData) {
+  try {
+    const data = JSON.parse(jsonData);
+    if (!Array.isArray(data)) throw new Error('Format JSON tidak valid');
+    
+    data.forEach(item => {
+      if (item.url) { // Only add items with valid URLs (non-local)
+        ARSIP.push({
+          type: item.type,
+          url: item.url,
+          name: item.name,
+          local: false,
+          addedDate: item.addedDate || Date.now()
+        });
+      }
+    });
+    
+    saveArsip();
+    renderArsip();
+    showToast(`Data arsip diimpor: ${data.length} item`, 'success');
+  } catch (error) {
+    showToast('Gagal mengimpor data: ' + error.message, 'error');
+  }
+}
+
+document.getElementById('addUrl').addEventListener('click', () => {
+  const url = aUrl.value.trim(); 
+  if (!url) return showToast('Isi URL dulu ya', 'error'); 
+  const type = aType.value;
+  const name = url.split('/').pop();
+  ARSIP.push({ type, url, name, local: false, addedDate: Date.now() }); 
+  saveArsip(); 
+  renderArsip(); 
+  aUrl.value = '';
+  showToast('URL ditambahkan ke arsip', 'success');
+});
+
+document.getElementById('addFile').addEventListener('click', () => {
+  const f = aFile.files[0]; 
+  if (!f) return showToast('Pilih file dulu', 'error'); 
+  const url = URL.createObjectURL(f); 
+  const type = (/pdf$/i.test(f.name)) ? 'pdf' : 'excel';
+  ARSIP.push({ type, url, name: f.name, local: true, addedDate: Date.now() }); 
+  saveArsip(); 
+  renderArsip(); 
+  aFile.value = '';
+  showToast('File diunggah ke arsip', 'success');
+});
+
+document.getElementById('clrArsip').addEventListener('click', () => {
+  if (!confirm('Yakin ingin menghapus semua arsip?')) return;
+  ARSIP.forEach(d => { if (d.local) URL.revokeObjectURL(d.url) }); 
+  ARSIP = []; 
+  saveArsip(); 
+  renderArsip(); 
+  aView.src = '';
+  showToast('Arsip dikosongkan', 'success');
+});
+
+document.getElementById('exportArsip').addEventListener('click', exportArsipData);
+
+document.getElementById('importArsip').addEventListener('click', () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = event => {
+      importArsipData(event.target.result);
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+});
+
+// ==== Inisialisasi Aplikasi ====
+function initApp() {
+  initTheme();
+  initTabs();
+  initImageModal();
+  renderArsip();
+  
+  // Load data from URL parameters if any
+  const urlParams = new URLSearchParams(window.location.search);
+  const csvUrl = urlParams.get('csv');
+  if (csvUrl) {
+    document.getElementById('csvUrl').value = csvUrl;
+    document.querySelector('.tab[data-tab="gallery"]').click();
+  }
+}
+
+// Jalankan inisialisasi saat DOM siap
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
+</script>
+</body>
+</html>
