@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Mahasiswa Community</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --female: #ffebee;
+            --male: #e3f2fd;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .login-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--primary);
+        }
+        
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            flex: 1;
+            min-width: 200px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+        
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        tr.male {
+            background-color: var(--male);
+        }
+        
+        tr.female {
+            background-color: var(--female);
+        }
+        
+        tr:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            margin-right: 5px;
+            font-size: 14px;
+        }
+        
+        .edit-btn {
+            background-color: var(--success);
+        }
+        
+        .view-btn {
+            background-color: var(--secondary);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+        
+        .page-btn {
+            padding: 8px 15px;
+            background-color: white;
+            color: var(--dark);
+            border: 1px solid #ddd;
+        }
+        
+        .page-btn.active {
+            background-color: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            color: #777;
+        }
+        
+        @media (max-width: 768px) {
+            .filters {
+                flex-direction: column;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+            
+            .stats {
+                flex-direction: column;
+            }
+            
+            th, td {
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Data Mahasiswa Community</h1>
+            <p class="subtitle">Sistem Informasi Data Mahasiswa dan Biodata Lengkap</p>
+        </header>
+        
+        <section class="login-section">
+            <h2>Login untuk Mengelola Data</h2>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Masukkan email Anda">
+            </div>
+            <div class="form-group">
+                <label for="gender">Jenis Kelamin</label>
+                <select id="gender">
+                    <option value="">Pilih Jenis Kelamin</option>
+                    <option value="Laki-laki">Laki-laki</option>
+                    <option value="Perempuan">Perempuan</option>
+                </select>
+            </div>
+            <button id="login-btn">Login</button>
+        </section>
+        
+        <div id="dashboard" style="display: none;">
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="search">Cari Mahasiswa</label>
+                    <input type="text" id="search" placeholder="Nama, NIM, atau email...">
+                </div>
+                <div class="filter-group">
+                    <label for="program-studi">Program Studi</label>
+                    <select id="program-studi">
+                        <option value="">Semua Program Studi</option>
+                        <option value="Informatika">Informatika</option>
+                        <option value="Sistem Informasi">Sistem Informasi</option>
+                        <option value="Teknik Elektro">Teknik Elektro</option>
+                        <option value="Manajemen">Manajemen</option>
+                        <option value="Akuntansi">Akuntansi</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="angkatan">Angkatan</label>
+                    <select id="angkatan">
+                        <option value="">Semua Angkatan</option>
+                        <option value="2023">2023</option>
+                        <option value="2022">2022</option>
+                        <option value="2021">2021</option>
+                        <option value="2020">2020</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-mahasiswa">0</div>
+                    <div>Total Mahasiswa</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="male-count">0</div>
+                    <div>Laki-laki</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="female-count">0</div>
+                    <div>Perempuan</div>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table id="mahasiswa-table">
+                    <thead>
+                        <tr>
+                            <th>NIM</th>
+                            <th>Nama</th>
+                            <th>Jenis Kelamin</th>
+                            <th>Program Studi</th>
+                            <th>Angkatan</th>
+                            <th>Email</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Data akan diisi oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pagination">
+                <button class="page-btn active">1</button>
+                <button class="page-btn">2</button>
+                <button class="page-btn">3</button>
+                <button class="page-btn">></button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2023 Data Mahasiswa Community - Sistem Informasi Mahasiswa</p>
+    </footer>
+
+    <script>
+        // Data contoh mahasiswa (dalam aplikasi nyata, data ini akan diambil dari Google Sheets/Excel)
+        const mahasiswaData = [
+            { nim: "2023001", nama: "Ahmad Rizki", jenisKelamin: "Laki-laki", programStudi: "Informatika", angkatan: "2023", email: "ahmad@example.com" },
+            { nim: "2023002", nama: "Siti Rahayu", jenisKelamin: "Perempuan", programStudi: "Sistem Informasi", angkatan: "2023", email: "siti@example.com" },
+            { nim: "2022001", nama: "Budi Santoso", jenisKelamin: "Laki-laki", programStudi: "Teknik Elektro", angkatan: "2022", email: "budi@example.com" },
+            { nim: "2022002", nama: "Dewi Anggraini", jenisKelamin: "Perempuan", programStudi: "Manajemen", angkatan: "2022", email: "dewi@example.com" },
+            { nim: "2021001", nama: "Rudi Hermawan", jenisKelamin: "Laki-laki", programStudi: "Akuntansi", angkatan: "2021", email: "rudi@example.com" },
+            { nim: "2021002", nama: "Maya Sari", jenisKelamin: "Perempuan", programStudi: "Informatika", angkatan: "2021", email: "maya@example.com" },
+            { nim: "2020001", nama: "Fajar Pratama", jenisKelamin: "Laki-laki", programStudi: "Sistem Informasi", angkatan: "2020", email: "fajar@example.com" },
+            { nim: "2020002", nama: "Rina Wati", jenisKelamin: "Perempuan", programStudi: "Teknik Elektro", angkatan: "2020", email: "rina@example.com" },
+            { nim: "2023003", nama: "Hendra Gunawan", jenisKelamin: "Laki-laki", programStudi: "Manajemen", angkatan: "2023", email: "hendra@example.com" },
+            { nim: "2023004", nama: "Lina Marlina", jenisKelamin: "Perempuan", programStudi: "Akuntansi", angkatan: "2023", email: "lina@example.com" }
+        ];
+
+        // Tambahkan lebih banyak data untuk simulasi
+        for (let i = 5; i <= 100; i++) {
+            const gender = i % 2 === 0 ? "Perempuan" : "Laki-laki";
+            const programs = ["Informatika", "Sistem Informasi", "Teknik Elektro", "Manajemen", "Akuntansi"];
+            const year = i % 4 + 2020;
+            
+            mahasiswaData.push({
+                nim: `${year}${i.toString().padStart(3, '0')}`,
+                nama: `Mahasiswa ${i}`,
+                jenisKelamin: gender,
+                programStudi: programs[i % 5],
+                angkatan: year.toString(),
+                email: `mahasiswa${i}@example.com`
+            });
+        }
+
+        // Variabel global
+        let currentUser = null;
+        let filteredData = [...mahasiswaData];
+
+        // Elemen DOM
+        const loginSection = document.querySelector('.login-section');
+        const dashboard = document.getElementById('dashboard');
+        const loginBtn = document.getElementById('login-btn');
+        const tableBody = document.getElementById('table-body');
+        const searchInput = document.getElementById('search');
+        const programStudiFilter = document.getElementById('program-studi');
+        const angkatanFilter = document.getElementById('angkatan');
+        const totalMahasiswaEl = document.getElementById('total-mahasiswa');
+        const maleCountEl = document.getElementById('male-count');
+        const femaleCountEl = document.getElementById('female-count');
+
+        // Event Listeners
+        loginBtn.addEventListener('click', handleLogin);
+        searchInput.addEventListener('input', filterData);
+        programStudiFilter.addEventListener('change', filterData);
+        angkatanFilter.addEventListener('change', filterData);
+
+        // Fungsi untuk menangani login
+        function handleLogin() {
+            const email = document.getElementById('email').value;
+            const gender = document.getElementById('gender').value;
+            
+            if (!email || !gender) {
+                alert('Harap isi email dan pilih jenis kelamin');
+                return;
+            }
+            
+            currentUser = { email, gender };
+            loginSection.style.display = 'none';
+            dashboard.style.display = 'block';
+            
+            // Filter data berdasarkan jenis kelamin pengguna
+            if (gender === "Laki-laki") {
+                filteredData = mahasiswaData.filter(m => m.jenisKelamin === "Laki-laki");
+            } else if (gender === "Perempuan") {
+                filteredData = mahasiswaData.filter(m => m.jenisKelamin === "Perempuan");
+            }
+            
+            updateStats();
+            renderTable();
+        }
+
+        // Fungsi untuk memfilter data
+        function filterData() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const programStudi = programStudiFilter.value;
+            const angkatan = angkatanFilter.value;
+            
+            // Filter berdasarkan jenis kelamin pengguna
+            let data = [...mahasiswaData];
+            if (currentUser.gender === "Laki-laki") {
+                data = data.filter(m => m.jenisKelamin === "Laki-laki");
+            } else if (currentUser.gender === "Perempuan") {
+                data = data.filter(m => m.jenisKelamin === "Perempuan");
+            }
+            
+            // Terapkan filter lainnya
+            filteredData = data.filter(mahasiswa => {
+                const matchesSearch = mahasiswa.nama.toLowerCase().includes(searchTerm) ||
+                                    mahasiswa.nim.toLowerCase().includes(searchTerm) ||
+                                    mahasiswa.email.toLowerCase().includes(searchTerm);
+                
+                const matchesProgram = programStudi ? mahasiswa.programStudi === programStudi : true;
+                const matchesAngkatan = angkatan ? mahasiswa.angkatan === angkatan : true;
+                
+                return matchesSearch && matchesProgram && matchesAngkatan;
+            });
+            
+            updateStats();
+            renderTable();
+        }
+
+        // Fungsi untuk memperbarui statistik
+        function updateStats() {
+            const total = filteredData.length;
+            const maleCount = filteredData.filter(m => m.jenisKelamin === "Laki-laki").length;
+            const femaleCount = filteredData.filter(m => m.jenisKelamin === "Perempuan").length;
+            
+            totalMahasiswaEl.textContent = total;
+            maleCountEl.textContent = maleCount;
+            femaleCountEl.textContent = femaleCount;
+        }
+
+        // Fungsi untuk merender tabel
+        function renderTable() {
+            tableBody.innerHTML = '';
+            
+            filteredData.forEach(mahasiswa => {
+                const row = document.createElement('tr');
+                row.className = mahasiswa.jenisKelamin === "Laki-laki" ? "male" : "female";
+                
+                // Cek apakah pengguna saat ini dapat mengedit data ini
+                const canEdit = currentUser.email === mahasiswa.email;
+                
+                row.innerHTML = `
+                    <td>${mahasiswa.nim}</td>
+                    <td>${mahasiswa.nama}</td>
+                    <td>${mahasiswa.jenisKelamin}</td>
+                    <td>${mahasiswa.programStudi}</td>
+                    <td>${mahasiswa.angkatan}</td>
+                    <td>${mahasiswa.email}</td>
+                    <td>
+                        <button class="action-btn view-btn" onclick="viewDetail('${mahasiswa.nim}')">Lihat</button>
+                        ${canEdit ? `<button class="action-btn edit-btn" onclick="editData('${mahasiswa.nim}')">Edit</button>` : ''}
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Fungsi untuk melihat detail (simulasi)
+        function viewDetail(nim) {
+            const mahasiswa = mahasiswaData.find(m => m.nim === nim);
+            alert(`Detail Mahasiswa:\nNIM: ${mahasiswa.nim}\nNama: ${mahasiswa.nama}\nEmail: ${mahasiswa.email}\nProgram Studi: ${mahasiswa.programStudi}`);
+        }
+
+        // Fungsi untuk mengedit data (simulasi)
+        function editData(nim) {
+            const mahasiswa = mahasiswaData.find(m => m.nim === nim);
+            const newEmail = prompt("Masukkan email baru:", mahasiswa.email);
+            
+            if (newEmail && newEmail !== mahasiswa.email) {
+                mahasiswa.email = newEmail;
+                alert("Email berhasil diperbarui!");
+                filterData(); // Refresh tampilan
+            }
+        }
+
+        // Inisialisasi
+        updateStats();
+    </script>
+</body>
+</html>

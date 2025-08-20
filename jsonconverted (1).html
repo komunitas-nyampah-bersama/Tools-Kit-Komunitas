@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konverter ke JSON</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --warning: #f39c12;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+        
+        .input-section, .output-section {
+            flex: 1;
+            min-width: 300px;
+            padding: 20px;
+        }
+        
+        .section-title {
+            color: var(--primary);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary);
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--secondary);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            background-color: #f8f9fa;
+        }
+        
+        .upload-area:hover {
+            background-color: #e8f4fc;
+            border-color: var(--primary);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .btn {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            display: inline-block;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .preview-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow: auto;
+        }
+        
+        .json-output {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            min-height: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .option-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .option-item {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .instructions {
+            background-color: #e8f4fc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .instructions h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .input-section, .output-section {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Konverter Excel/CSV/Sheets ke JSON</h1>
+            <p class="subtitle">Unggah file Excel, CSV, atau tempel URL Google Sheets untuk mengonversi ke JSON</p>
+        </header>
+        
+        <div class="alert alert-success" id="success-alert">
+            Konversi berhasil! Data telah diubah menjadi JSON.
+        </div>
+        
+        <div class="alert alert-error" id="error-alert">
+            Terjadi kesalahan. Pastikan file yang diunggah valid.
+        </div>
+        
+        <div class="main-content">
+            <div class="input-section">
+                <h2 class="section-title">Input Data</h2>
+                
+                <div class="upload-area" id="drop-area">
+                    <div class="upload-icon">📤</div>
+                    <h3>Unggah File Excel atau CSV</h3>
+                    <p>Seret file ke sini atau klik tombol di bawah</p>
+                    <input type="file" id="file-input" class="file-input" accept=".xlsx,.xls,.csv">
+                    <button class="btn" onclick="document.getElementById('file-input').click()">Pilih File</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gsheet-url">Atau tempel URL Google Sheets:</label>
+                    <input type="text" id="gsheet-url" placeholder="https://docs.google.com/spreadsheets/d/...">
+                    <button class="btn" onclick="loadGoogleSheet()">Muat dari Google Sheets</button>
+                </div>
+                
+                <div class="option-group">
+                    <div class="option-item">
+                        <label for="json-format">Format JSON:</label>
+                        <select id="json-format">
+                            <option value="array">Array of Objects</option>
+                            <option value="object">Object dengan Keys</option>
+                        </select>
+                    </div>
+                    
+                    <div class="option-item">
+                        <label for="header-row">Baris Header:</label>
+                        <input type="number" id="header-row" value="1" min="1">
+                    </div>
+                </div>
+                
+                <button class="btn btn-success" onclick="convertToJSON()">Konversi ke JSON</button>
+                <button class="btn btn-warning" onclick="clearAll()">Bersihkan</button>
+                
+                <div class="preview-container">
+                    <h3>Pratinjau Data</h3>
+                    <div id="data-preview">
+                        <p>Data akan ditampilkan di sini setelah diunggah</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="output-section">
+                <h2 class="section-title">Output JSON</h2>
+                <button class="btn" onclick="downloadJSON()">Download JSON</button>
+                <button class="btn" onclick="copyToClipboard()">Salin ke Clipboard</button>
+                
+                <div class="json-output" id="json-output">
+                    {/* JSON output akan ditampilkan di sini */}
+                </div>
+                
+                <div class="instructions">
+                    <h3>Cara Menggunakan:</h3>
+                    <ol>
+                        <li>Unggah file Excel (.xlsx, .xls) atau CSV, atau tempel URL Google Sheets</li>
+                        <li>Data akan ditampilkan di area pratinjau</li>
+                        <li>Pilih format JSON yang diinginkan</li>
+                        <li>Klik "Konversi ke JSON" untuk menghasilkan JSON</li>
+                        <li>Gunakan "Download JSON" atau "Salin ke Clipboard" untuk menyimpan hasil</li>
+                    </ol>
+                    
+                    <p><strong>Catatan untuk Google Sheets:</strong> Pastikan sheet telah dipublikasikan dengan mengklik "File" → "Share" → "Publish to web"</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 Konverter Excel/CSV/Sheets ke JSON | Tools Data Management</p>
+        </footer>
+    </div>
+
+    <script>
+        let workbookData = null;
+        let jsonData = null;
+        
+        // Event listeners untuk drag and drop
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('file-input');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropArea.style.backgroundColor = '#e8f4fc';
+            dropArea.style.borderColor = '#3498db';
+        }
+        
+        function unhighlight() {
+            dropArea.style.backgroundColor = '#f8f9fa';
+            dropArea.style.borderColor = '#3498db';
+        }
+        
+        dropArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length) {
+                fileInput.files = files;
+                handleFile(files[0]);
+            }
+        }
+        
+        fileInput.addEventListener('change', function() {
+            if (this.files.length) {
+                handleFile(this.files[0]);
+            }
+        });
+        
+        function handleFile(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                processExcelData(data, file.name);
+            };
+            
+            reader.onerror = function() {
+                showError('Gagal membaca file');
+            };
+            
+            // Cek ekstensi file untuk menentukan cara membaca
+            if (file.name.endsWith('.csv')) {
+                reader.readAsText(file);
+            } else {
+                reader.readAsArrayBuffer(file);
+            }
+        }
+        
+        function processExcelData(data, filename) {
+            try {
+                let workbook;
+                
+                if (filename.endsWith('.csv')) {
+                    // Handle CSV file
+                    const csvString = new TextDecoder().decode(data);
+                    workbook = XLSX.read(csvString, { type: 'string' });
+                } else {
+                    // Handle Excel file
+                    workbook = XLSX.read(data, { type: 'array' });
+                }
+                
+                workbookData = workbook;
+                displayPreview(workbook);
+                
+            } catch (e) {
+                console.error(e);
+                showError('Format file tidak didukung');
+            }
+        }
+        
+        function displayPreview(workbook) {
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            
+            let previewHTML = '<table>';
+            
+            // Tampilkan maksimal 10 baris untuk preview
+            const previewRows = jsonData.slice(0, 10);
+            
+            previewRows.forEach((row, index) => {
+                previewHTML += '<tr>';
+                row.forEach(cell => {
+                    if (index === 0) {
+                        previewHTML += `<th>${cell}</th>`;
+                    } else {
+                        previewHTML += `<td>${cell}</td>`;
+                    }
+                });
+                previewHTML += '</tr>';
+            });
+            
+            previewHTML += '</table>';
+            
+            if (jsonData.length > 10) {
+                previewHTML += `<p>Menampilkan 10 dari ${jsonData.length} baris</p>`;
+            }
+            
+            document.getElementById('data-preview').innerHTML = previewHTML;
+        }
+        
+        function loadGoogleSheet() {
+            const url = document.getElementById('gsheet-url').value;
+            
+            if (!url) {
+                showError('Harap masukkan URL Google Sheets');
+                return;
+            }
+            
+            // Convert Google Sheets URL to export URL
+            const match = url.match(/\/d\/(.*?)\//);
+            if (!match || match.length < 2) {
+                showError('URL Google Sheets tidak valid');
+                return;
+            }
+            
+            const sheetId = match[1];
+            const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=xlsx`;
+            
+            // Load sheet using AJAX
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', exportUrl, true);
+            xhr.responseType = 'arraybuffer';
+            
+            xhr.onload = function(e) {
+                if (this.status === 200) {
+                    processExcelData(this.response, 'sheet.xlsx');
+                    showSuccess('Google Sheets berhasil dimuat');
+                } else {
+                    showError('Gagal memuat Google Sheets. Pastikan sheet telah dipublikasikan.');
+                }
+            };
+            
+            xhr.onerror = function() {
+                showError('Gagal memuat Google Sheets');
+            };
+            
+            xhr.send();
+        }
+        
+        function convertToJSON() {
+            if (!workbookData) {
+                showError('Tidak ada data untuk dikonversi');
+                return;
+            }
+            
+            try {
+                const firstSheetName = workbookData.SheetNames[0];
+                const worksheet = workbookData.Sheets[firstSheetName];
+                
+                const headerRow = parseInt(document.getElementById('header-row').value) - 1;
+                const jsonFormat = document.getElementById('json-format').value;
+                
+                let json;
+                
+                if (jsonFormat === 'array') {
+                    json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                } else {
+                    json = XLSX.utils.sheet_to_json(worksheet, { range: headerRow });
+                }
+                
+                jsonData = json;
+                document.getElementById('json-output').textContent = JSON.stringify(json, null, 2);
+                showSuccess('Data berhasil dikonversi ke JSON');
+                
+            } catch (e) {
+                console.error(e);
+                showError('Gagal mengonversi data');
+            }
+        }
+        
+        function downloadJSON() {
+            if (!jsonData) {
+                showError('Tidak ada data JSON untuk diunduh');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(jsonData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'data.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+        
+        function copyToClipboard() {
+            if (!jsonData) {
+                showError('Tidak ada data JSON untuk disalin');
+                return;
+            }
+            
+            const textArea = document.createElement('textarea');
+            textArea.value = JSON.stringify(jsonData, null, 2);
+            document.body.appendChild(textArea);
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showSuccess('JSON berhasil disalin ke clipboard');
+            } catch (err) {
+                showError('Gagal menyalin ke clipboard');
+            }
+            
+            document.body.removeChild(textArea);
+        }
+        
+        function clearAll() {
+            workbookData = null;
+            jsonData = null;
+            document.getElementById('data-preview').innerHTML = '<p>Data akan ditampilkan di sini setelah diunggah</p>';
+            document.getElementById('json-output').textContent = '';
+            document.getElementById('file-input').value = '';
+            document.getElementById('gsheet-url').value = '';
+            hideAlerts();
+        }
+        
+        function showSuccess(message) {
+            const alert = document.getElementById('success-alert');
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(hideAlerts, 5000);
+        }
+        
+        function showError(message) {
+            const alert = document.getElementById('error-alert');
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(hideAlerts, 5000);
+        }
+        
+        function hideAlerts() {
+            document.getElementById('success-alert').style.display = 'none';
+            document.getElementById('error-alert').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

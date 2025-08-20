@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Master Pro - Advanced Data Toolkit</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --sidebar-width: 250px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .logo p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .nav-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            font-weight: 500;
+        }
+        
+        .nav-item i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .header h2 {
+            color: var(--primary);
+        }
+        
+        .toolbar {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .btn i {
+            margin-right: 5px;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .upload-area {
+            border: 3px dashed var(--secondary);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+            background-color: #f8f9fa;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            background-color: #e3f2fd;
+            border-color: var(--primary);
+        }
+        
+        .upload-icon {
+            font-size: 50px;
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .data-table th {
+            background-color: var(--primary);
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .data-table tr:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .table-container {
+            max-height: 500px;
+            overflow: auto;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .tab-container {
+            margin-top: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom-color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .tool-section {
+            display: none;
+        }
+        
+        .tool-section.active {
+            display: block;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            color: #777;
+            border-top: 1px solid #ddd;
+        }
+        
+        @media (max-width: 1024px) {
+            body {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .nav-items {
+                display: flex;
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+            
+            .nav-item {
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <h1>Data Master Pro</h1>
+            <p>Advanced Data Toolkit</p>
+        </div>
+        
+        <div class="nav-items">
+            <div class="nav-item active" data-tool="upload">
+                <i>📤</i> Upload Data
+            </div>
+            <div class="nav-item" data-tool="clean">
+                <i>✨</i> Data Cleaning
+            </div>
+            <div class="nav-item" data-tool="transform">
+                <i>🔄</i> Data Transformation
+            </div>
+            <div class="nav-item" data-tool="analyze">
+                <i>📊</i> Data Analysis
+            </div>
+            <div class="nav-item" data-tool="visualize">
+                <i>📈</i> Data Visualization
+            </div>
+            <div class="nav-item" data-tool="merge">
+                <i>🔗</i> Data Merging
+            </div>
+            <div class="nav-item" data-tool="validate">
+                <i>✅</i> Data Validation
+            </div>
+            <div class="nav-item" data-tool="automate">
+                <i>⚙️</i> Automation
+            </div>
+            <div class="nav-item" data-tool="export">
+                <i>💾</i> Export Data
+            </div>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="header">
+            <h2 id="current-tool">Upload Data</h2>
+            <div class="toolbar">
+                <button class="btn" id="save-btn">
+                    <i>💾</i> Save Project
+                </button>
+                <button class="btn" id="load-btn">
+                    <i>📂</i> Load Project
+                </button>
+                <button class="btn btn-success" id="help-btn">
+                    <i>❓</i> Help
+                </button>
+            </div>
+        </div>
+        
+        <!-- Upload Data Tool -->
+        <div class="tool-section active" id="upload-tool">
+            <div class="card">
+                <h3>Upload Data from Multiple Sources</h3>
+                <div class="upload-area" id="drop-area">
+                    <div class="upload-icon">📤</div>
+                    <p>Seret dan lepas file Excel, CSV, atau JSON di sini</p>
+                    <p>Atau</p>
+                    <input type="file" id="file-input" accept=".xlsx,.xls,.csv,.json" style="display: none;">
+                    <button class="btn" onclick="document.getElementById('file-input').click()">Pilih File</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="google-sheets-url">Atau masukkan URL Google Sheets:</label>
+                    <input type="text" id="google-sheets-url" placeholder="https://docs.google.com/spreadsheets/d/...">
+                    <button class="btn" style="margin-top: 10px;">Load from Google Sheets</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="json-data">Atau tempel data JSON langsung:</label>
+                    <textarea id="json-data" rows="5" placeholder='[{ "name": "John", "age": 30 }, ...]'></textarea>
+                    <button class="btn" style="margin-top: 10px;">Load JSON Data</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Data Preview</h3>
+                <div class="table-container">
+                    <table class="data-table" id="preview-table">
+                        <thead>
+                            <tr>
+                                <th>Column 1</th>
+                                <th>Column 2</th>
+                                <th>Column 3</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="3" style="text-align: center;">No data uploaded yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="row-count">0</div>
+                        <div>Total Rows</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="column-count">0</div>
+                        <div>Total Columns</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="empty-count">0</div>
+                        <div>Empty Cells</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="duplicate-count">0</div>
+                        <div>Duplicate Rows</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Cleaning Tool -->
+        <div class="tool-section" id="clean-tool">
+            <div class="card">
+                <h3>Data Cleaning Tools</h3>
+                <div class="tab-container">
+                    <div class="tabs">
+                        <div class="tab active" data-tab="dedupe">Remove Duplicates</div>
+                        <div class="tab" data-tab="fill">Fill Empty Values</div>
+                        <div class="tab" data-tab="replace">Find & Replace</div>
+                        <div class="tab" data-tab="format">Format Data</div>
+                    </div>
+                    
+                    <div class="tab-content active" id="dedupe-tab">
+                        <p>Hapus baris duplikat dari dataset Anda</p>
+                        <div class="form-group">
+                            <label>Pilih kolom untuk memeriksa duplikasi:</label>
+                            <div id="dedupe-columns"></div>
+                        </div>
+                        <button class="btn">Hapus Duplikat</button>
+                    </div>
+                    
+                    <div class="tab-content" id="fill-tab">
+                        <p>Isi nilai yang kosong dalam dataset</p>
+                        <div class="form-group">
+                            <label>Pilih kolom:</label>
+                            <select id="fill-column"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Metode pengisian:</label>
+                            <select id="fill-method">
+                                <option value="fixed">Nilai tetap</option>
+                                <option value="mean">Rata-rata</option>
+                                <option value="median">Median</option>
+                                <option value="mode">Modus</option>
+                                <option value="forward">Isi ke depan</option>
+                                <option value="backward">Isi ke belakang</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="fixed-value-container">
+                            <label>Nilai pengisian:</label>
+                            <input type="text" id="fixed-value">
+                        </div>
+                        <button class="btn">Isi Nilai Kosong</button>
+                    </div>
+                    
+                    <div class="tab-content" id="replace-tab">
+                        <p>Temukan dan ganti nilai dalam dataset</p>
+                        <div class="form-group">
+                            <label>Pilih kolom:</label>
+                            <select id="replace-column"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Temukan:</label>
+                            <input type="text" id="find-value">
+                        </div>
+                        <div class="form-group">
+                            <label>Ganti dengan:</label>
+                            <input type="text" id="replace-value">
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="match-case"> 
+                                Match case
+                            </label>
+                            <label>
+                                <input type="checkbox" id="whole-word"> 
+                                Whole word only
+                            </label>
+                        </div>
+                        <button class="btn">Ganti Semua</button>
+                    </div>
+                    
+                    <div class="tab-content" id="format-tab">
+                        <p>Format ulang data dalam kolom</p>
+                        <div class="form-group">
+                            <label>Pilih kolom:</label>
+                            <select id="format-column"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Pilih format:</label>
+                            <select id="format-type">
+                                <option value="uppercase">UPPERCASE</option>
+                                <option value="lowercase">lowercase</option>
+                                <option value="titlecase">Title Case</option>
+                                <option value="trim">Trim Spaces</option>
+                                <option value="number">Format Angka</option>
+                                <option value="date">Format Tanggal</option>
+                            </select>
+                        </div>
+                        <button class="btn">Terapkan Format</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Transformation Tool -->
+        <div class="tool-section" id="transform-tool">
+            <div class="card">
+                <h3>Data Transformation Tools</h3>
+                <div class="tab-container">
+                    <div class="tabs">
+                        <div class="tab active" data-tab="pivot">Pivot Table</div>
+                        <div class="tab" data-tab="formula">Formula</div>
+                        <div class="tab" data-tab="group">Group By</div>
+                        <div class="tab" data-tab="filter">Filter Data</div>
+                    </div>
+                    
+                    <div class="tab-content active" id="pivot-tab">
+                        <p>Buat pivot table dari data Anda</p>
+                        <div class="form-group">
+                            <label>Rows:</label>
+                            <select id="pivot-rows"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Columns:</label>
+                            <select id="pivot-columns"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Values:</label>
+                            <select id="pivot-values"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Aggregation:</label>
+                            <select id="pivot-aggregation">
+                                <option value="sum">Sum</option>
+                                <option value="average">Average</option>
+                                <option value="count">Count</option>
+                                <option value="min">Min</option>
+                                <option value="max">Max</option>
+                            </select>
+                        </div>
+                        <button class="btn">Buat Pivot Table</button>
+                    </div>
+                    
+                    <div class="tab-content" id="formula-tab">
+                        <p>Terapkan formula ke data Anda</p>
+                        <div class="form-group">
+                            <label>Formula:</label>
+                            <input type="text" id="formula-input" placeholder="CONCAT(A2, ' ', B2)">
+                        </div>
+                        <div class="form-group">
+                            <label>Kolom tujuan:</label>
+                            <input type="text" id="formula-output" placeholder="Nama Kolom Baru">
+                        </div>
+                        <button class="btn">Terapkan Formula</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Analysis Tool -->
+        <div class="tool-section" id="analyze-tool">
+            <div class="card">
+                <h3>Data Analysis</h3>
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="mean-value">0</div>
+                        <div>Rata-rata</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="median-value">0</div>
+                        <div>Median</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="min-value">0</div>
+                        <div>Nilai Minimum</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="max-value">0</div>
+                        <div>Nilai Maksimum</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Pilih kolom untuk analisis:</label>
+                    <select id="analysis-column"></select>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table" id="analysis-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Count</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <td>Mean</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <td>Std Dev</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <td>Min</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <td>25%</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <td>50%</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <td>75%</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <td>Max</td>
+                                <td>0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>© 2023 Data Master Pro - Advanced Data Toolkit | Solusi All-in-One untuk Pengolahan Data</p>
+        </div>
+    </div>
+
+    <!-- Modal for Help -->
+    <div class="modal" id="help-modal">
+        <div class="modal-content">
+            <h2>Bantuan Penggunaan</h2>
+            <p>Data Master Pro adalah toolkit lengkap untuk mengolah data Excel, CSV, dan Google Sheets langsung di browser.</p>
+            <h3>Cara Penggunaan:</h3>
+            <ol>
+                <li>Unggah data dari file, Google Sheets, atau tempel JSON</li>
+                <li>Gunakan alat yang tersedia untuk membersihkan, mengubah, menganalisis, atau memvisualisasikan data</li>
+                <li>Ekspor hasilnya ke format yang diinginkan</li>
+            </ol>
+            <button class="btn" style="margin-top: 20px;" onclick="closeModal('help-modal')">Tutup</button>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentData = [];
+        let currentHeaders = [];
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+            initializeToolTabs();
+        });
+        
+        // Initialize event listeners
+        function initializeEventListeners() {
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const tool = this.getAttribute('data-tool');
+                    switchTool(tool);
+                });
+            });
+            
+            // File input
+            document.getElementById('file-input').addEventListener('change', handleFileUpload);
+            
+            // Help button
+            document.getElementById('help-btn').addEventListener('click', function() {
+                document.getElementById('help-modal').style.display = 'flex';
+            });
+            
+            // Drop area
+            const dropArea = document.getElementById('drop-area');
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            dropArea.addEventListener('drop', handleDrop, false);
+        }
+        
+        // Initialize tool tabs
+        function initializeToolTabs() {
+            // Tool tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    const container = this.closest('.tab-container');
+                    
+                    // Deactivate all tabs in this container
+                    container.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    container.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                    
+                    // Activate current tab
+                    this.classList.add('active');
+                    document.getElementById(`${tabName}-tab`).classList.add('active');
+                });
+            });
+        }
+        
+        // Switch between tools
+        function switchTool(tool) {
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-tool="${tool}"]`).classList.add('active');
+            
+            // Update header
+            document.getElementById('current-tool').textContent = document.querySelector(`[data-tool="${tool}"]`).textContent.trim();
+            
+            // Update visible tool section
+            document.querySelectorAll('.tool-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(`${tool}-tool`).classList.add('active');
+        }
+        
+        // Handle file upload
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const extension = file.name.split('.').pop().toLowerCase();
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    if (extension === 'csv') {
+                        parseCSV(e.target.result);
+                    } else if (['xlsx', 'xls'].includes(extension)) {
+                        parseExcel(e.target.result);
+                    } else if (extension === 'json') {
+                        parseJSON(e.target.result);
+                    } else {
+                        alert('Format file tidak didukung. Silakan unggah file CSV, Excel, atau JSON.');
+                    }
+                } catch (error) {
+                    console.error('Error reading file:', error);
+                    alert('Error membaca file: ' + error.message);
+                }
+            };
+            
+            if (extension === 'csv' || extension === 'json') {
+                reader.readAsText(file);
+            } else {
+                reader.readAsArrayBuffer(file);
+            }
+        }
+        
+        // Handle drop event
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                document.getElementById('file-input').files = files;
+                handleFileUpload({ target: { files: files } });
+            }
+        }
+        
+        // Prevent default behavior for drag and drop
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Highlight drop area
+        function highlight() {
+            document.getElementById('drop-area').style.backgroundColor = '#e3f2fd';
+        }
+        
+        // Remove highlight from drop area
+        function unhighlight() {
+            document.getElementById('drop-area').style.backgroundColor = '#f8f9fa';
+        }
+        
+        // Parse CSV data
+        function parseCSV(csvData) {
+            Papa.parse(csvData, {
+                header: true,
+                dynamicTyping: true,
+                complete: function(results) {
+                    processData(results.data, results.meta.fields);
+                },
+                error: function(error) {
+                    alert('Error parsing CSV: ' + error.message);
+                }
+            });
+        }
+        
+        // Parse Excel data
+        function parseExcel(excelData) {
+            const workbook = XLSX.read(excelData, { type: 'array' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            
+            if (data.length < 2) {
+                alert('File Excel tidak berisi data yang cukup');
+                return;
+            }
+            
+            const headers = data[0];
+            const rows = data.slice(1).map(row => {
+                const obj = {};
+                headers.forEach((header, i) => {
+                    obj[header] = row[i] !== undefined ? row[i] : null;
+                });
+                return obj;
+            });
+            
+            processData(rows, headers);
+        }
+        
+        // Parse JSON data
+        function parseJSON(jsonData) {
+            try {
+                const data = JSON.parse(jsonData);
+                if (Array.isArray(data) && data.length > 0) {
+                    const headers = Object.keys(data[0]);
+                    processData(data, headers);
+                } else {
+                    alert('Data JSON harus berupa array of objects');
+                }
+            } catch (error) {
+                alert('Error parsing JSON: ' + error.message);
+            }
+        }
+        
+        // Process data and update UI
+        function processData(data, headers) {
+            currentData = data;
+            currentHeaders = headers;
+            
+            updateDataPreview();
+            updateStats();
+            
+            // Update column selectors in various tools
+            updateColumnSelectors();
+        }
+        
+        // Update data preview table
+        function updateDataPreview() {
+            const table = document.getElementById('preview-table');
+            const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
+            
+            // Clear existing content
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+            
+            // Create header row
+            const headerRow = document.createElement('tr');
+            currentHeaders.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            
+            // Create data rows (limit to 50 for performance)
+            const rowCount = Math.min(currentData.length, 50);
+            for (let i = 0; i < rowCount; i++) {
+                const row = document.createElement('tr');
+                currentHeaders.forEach(header => {
+                    const td = document.createElement('td');
+                    td.textContent = currentData[i][header] !== null ? currentData[i][header] : '';
+                    row.appendChild(td);
+                });
+                tbody.appendChild(row);
+            }
+            
+            if (currentData.length > 50) {
+                const messageRow = document.createElement('tr');
+                const messageCell = document.createElement('td');
+                messageCell.colSpan = currentHeaders.length;
+                messageCell.textContent = `Menampilkan 50 dari ${currentData.length} baris...`;
+                messageCell.style.textAlign = 'center';
+                messageCell.style.fontStyle = 'italic';
+                messageRow.appendChild(messageCell);
+                tbody.appendChild(messageRow);
+            }
+        }
+        
+        // Update statistics
+        function updateStats() {
+            document.getElementById('row-count').textContent = currentData.length;
+            document.getElementById('column-count').textContent = currentHeaders.length;
+            
+            // Calculate empty cells
+            let emptyCount = 0;
+            currentData.forEach(row => {
+                currentHeaders.forEach(header => {
+                    if (row[header] === null || row[header] === undefined || row[header] === '') {
+                        emptyCount++;
+                    }
+                });
+            });
+            document.getElementById('empty-count').textContent = emptyCount;
+            
+            // Calculate duplicates (simplified)
+            const duplicateCount = 0; // This would need a more complex implementation
+            document.getElementById('duplicate-count').textContent = duplicateCount;
+        }
+        
+        // Update column selectors in various tools
+        function updateColumnSelectors() {
+            const selectors = [
+                'dedupe-columns', 'fill-column', 'replace-column', 
+                'format-column', 'pivot-rows', 'pivot-columns', 
+                'pivot-values', 'analysis-column'
+            ];
+            
+            selectors.forEach(selector => {
+                const element = document.getElementById(selector);
+                if (element) {
+                    element.innerHTML = '';
+                    currentHeaders.forEach(header => {
+                        const option = document.createElement('option');
+                        option.value = header;
+                        option.textContent = header;
+                        element.appendChild(option);
+                    });
+                }
+            });
+            
+            // Special case for dedupe columns (checkboxes)
+            const dedupeColumns = document.getElementById('dedupe-columns');
+            if (dedupeColumns) {
+                dedupeColumns.innerHTML = '';
+                currentHeaders.forEach(header => {
+                    const label = document.createElement('label');
+                    label.style.display = 'block';
+                    label.style.marginBottom = '5px';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = header;
+                    checkbox.checked = true;
+                    
+                    label.appendChild(checkbox);
+                    label.appendChild(document.createTextNode(' ' + header));
+                    dedupeColumns.appendChild(label);
+                });
+            }
+        }
+        
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // Sample data for demonstration
+        function loadSampleData() {
+            const sampleData = [
+                { name: 'John Doe', age: 30, city: 'New York', salary: 50000 },
+                { name: 'Jane Smith', age: 25, city: 'Los Angeles', salary: 60000 },
+                { name: 'Bob Johnson', age: 35, city: 'Chicago', salary: 55000 },
+                { name: 'Alice Brown', age: 28, city: 'New York', salary: 65000 },
+                { name: 'Charlie Wilson', age: 32, city: 'Los Angeles', salary: 70000 },
+                { name: 'Diana Lee', age: 29, city: 'Chicago', salary: 52000 },
+                { name: 'Frank Miller', age: 40, city: 'New York', salary: 80000 },
+                { name: 'Grace Davis', age: 27, city: 'Los Angeles', salary: 58000 },
+                { name: 'Henry Taylor', age: 33, city: 'Chicago', salary: 62000 },
+                { name: 'Ivy Anderson', age: 31, city: 'New York', salary: 75000 }
+            ];
+            
+            const headers = Object.keys(sampleData[0]);
+            processData(sampleData, headers);
+        }
+        
+        // Load sample data on initial load for demonstration
+        setTimeout(loadSampleData, 1000);
+    </script>
+</body>
+</html>

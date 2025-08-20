@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tools Kit Komunitas - Konverter Data & Utilities</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #06b6d4;
+            --success: #22c55e;
+            --danger: #f43f5e;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #6b7280;
+            --border: #e5e7eb;
+            --card-bg: #ffffff;
+            --text: #111827;
+            --text-muted: #6b7280;
+            --bg-gradient: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        }
+
+        .dark-mode {
+            --bg-gradient: linear-gradient(135deg, #0a0a0a, #1a1a1a, #2d2d2d);
+            --card-bg: #374151;
+            --text: #f9fafb;
+            --text-muted: #9ca3af;
+            --border: #4b5563;
+            --light: #1f2937;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            color: white;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .panel {
+            display: none;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+        }
+
+        .panel.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h3 {
+            color: var(--secondary);
+            margin: 15px 0 10px;
+        }
+
+        .upload-area {
+            border: 3px dashed var(--primary);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+            background-color: var(--light);
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            background-color: rgba(79, 70, 229, 0.05);
+            border-color: var(--secondary);
+        }
+
+        .upload-icon {
+            font-size: 50px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary {
+            background-color: var(--gray);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+        }
+
+        pre {
+            background-color: var(--dark);
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            border-left: 4px solid var(--primary);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        tr:hover {
+            background-color: rgba(79, 70, 229, 0.05);
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: var(--border);
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .note {
+            background-color: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .option-group {
+            margin: 15px 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 16px;
+            background-color: var(--card-bg);
+            color: var(--text);
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            margin-top: 30px;
+            opacity: 0.8;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            border: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--card-bg);
+            color: var(--text);
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideUp 0.3s ease;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translate(-50%, 100px); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .card, .panel {
+                padding: 15px;
+            }
+            
+            .upload-area {
+                padding: 15px;
+            }
+            
+            th, td {
+                padding: 8px 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+        }
+
+        .github-corner {
+            position: absolute;
+            top: 0;
+            right: 0;
+            border: 0;
+            z-index: 101;
+        }
+
+        .github-corner svg {
+            fill: var(--primary);
+            color: white;
+        }
+
+        .github-corner:hover .octo-arm {
+            animation: octocat-wave 560ms ease-in-out;
+        }
+
+        @keyframes octocat-wave {
+            0%, 100% { transform: rotate(0); }
+            20%, 60% { transform: rotate(-25deg); }
+            40%, 80% { transform: rotate(10deg); }
+        }
+
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            flex: 1;
+            min-width: 150px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <a href="https://github.com/komunitasnyampah/Tools-Kit-Komunitas" class="github-corner" aria-label="View source on GitHub">
+        <svg width="80" height="80" viewBox="0 0 250 250" style="fill:#4f46e5; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
+            <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+            <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+            <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+        </svg>
+    </a>
+
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-toolbox"></i> Tools Kit Komunitas</h1>
+            <p class="subtitle">Kumpulan alat untuk memudahkan pengolahan data, konversi format, dan utilitas lainnya untuk komunitas</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" data-tab="converter"><i class="fas fa-exchange-alt"></i> Konverter Data</div>
+            <div class="tab" data-tab="gallery"><i class="fas fa-images"></i> Galeri dari CSV</div>
+            <div class="tab" data-tab="archive"><i class="fas fa-archive"></i> Arsip PDF/Excel</div>
+            <div class="tab" data-tab="generator"><i class="fas fa-link"></i> Generator Link</div>
+            <div class="tab" data-tab="stats"><i class="fas fa-chart-bar"></i> Statistik</div>
+        </div>
+
+        <!-- Panel Konverter Data -->
+        <section class="panel active" id="converter">
+            <h2><i class="fas fa-exchange-alt"></i> Konverter Excel/CSV ke JSON</h2>
+            
+            <div class="card">
+                <h3>Unggah File</h3>
+                
+                <div class="upload-area" id="drop-area">
+                    <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <p>Seret dan lepas file Excel atau CSV di sini</p>
+                    <p>Atau</p>
+                    <input type="file" id="file-input" accept=".xlsx,.xls,.csv" style="display: none;">
+                    <button class="btn" onclick="document.getElementById('file-input').click()"><i class="fas fa-file-upload"></i> Pilih File</button>
+                </div>
+                
+                <div class="option-group">
+                    <label for="header-row">Baris Header (baris yang berisi nama kolom):</label>
+                    <input type="number" id="header-row" value="1" min="1">
+                </div>
+                
+                <div class="option-group">
+                    <label for="data-row">Baris Data Pertama (baris dimana data dimulai):</label>
+                    <input type="number" id="data-row" value="2" min="1">
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress" id="progress-bar"></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Data dari Google Sheets</h3>
+                <p>Tempel data yang disalin dari Google Sheets (pastikan sudah termasuk header)</p>
+                <textarea id="gsheets-data" placeholder="Tempel data dari Google Sheets di sini..." style="width: 100%; height: 150px; padding: 10px; border: 1px solid var(--border); border-radius: 4px;"></textarea>
+                <button class="btn" onclick="processGSheetsData()"><i class="fab fa-google"></i> Proses Data Google Sheets</button>
+            </div>
+            
+            <div class="card">
+                <h3>Pratinjau Data</h3>
+                <div id="table-container"></div>
+            </div>
+            
+            <div class="card">
+                <h3>Hasil JSON</h3>
+                <button class="btn btn-success" onclick="downloadJSON()" id="download-btn" disabled><i class="fas fa-download"></i> Unduh JSON</button>
+                <button class="btn btn-secondary" onclick="copyToClipboard()" id="copy-btn" disabled><i class="fas fa-copy"></i> Salin ke Clipboard</button>
+                
+                <div class="option-group">
+                    <label for="json-format">Format JSON:</label>
+                    <select id="json-format" onchange="updateJSONPreview()">
+                        <option value="array">Array of Objects</option>
+                        <option value="object">Object with Keys</option>
+                        <option value="minified">Minified JSON</option>
+                    </select>
+                </div>
+                
+                <pre id="json-output">// Hasil JSON akan ditampilkan di sini</pre>
+            </div>
+            
+            <div class="note">
+                <h3><i class="fas fa-info-circle"></i> Cara Penggunaan:</h3>
+                <ol>
+                    <li>Unggah file Excel (.xlsx, .xls) atau CSV, atau tempel data dari Google Sheets</li>
+                    <li>Atur baris header dan baris data pertama jika diperlukan</li>
+                    <li>Data akan otomatis dikonversi ke format JSON</li>
+                    <li>Gunakan tombol "Unduh JSON" untuk menyimpan hasilnya, atau "Salin ke Clipboard" untuk menyalinnya</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Panel Galeri dari CSV -->
+        <section class="panel" id="gallery">
+            <h2><i class="fas fa-images"></i> Galeri dari CSV</h2>
+            
+            <div class="card">
+                <div class="option-group">
+                    <input id="csvUrl" placeholder="Tempel URL CSV (Sheets → Publish to web → CSV)">
+                    <input id="q" placeholder="Cari nama…">
+                    <select id="angkSel"><option value="">Semua Angkatan</option></select>
+                    <select id="kelasSel"><option value="">Semua Kelas</option></select>
+                    <button class="btn" id="loadCSV"><i class="fas fa-sync"></i> Muat</button>
+                    <button class="btn btn-warning" id="clearGalleryCache"><i class="fas fa-broom"></i> Bersihkan Cache</button>
+                    <button class="btn btn-danger" id="exportPDF"><i class="fas fa-file-pdf"></i> Ekspor PDF</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="grid" id="grid"></div>
+            </div>
+            
+            <div class="card">
+                <div class="viewer">
+                    <iframe id="viewer" src=""></iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- Panel Arsip PDF/Excel -->
+        <section class="panel" id="archive">
+            <h2><i class="fas fa-archive"></i> Arsip PDF/Excel</h2>
+            
+            <div class="card">
+                <div class="option-group">
+                    <input id="docUrl" placeholder="https://contoh.com/file.pdf">
+                    <select id="docType">
+                        <option value="pdf">PDF</option>
+                        <option value="excel">Excel</option>
+                    </select>
+                    <input type="file" id="docFile" accept=".pdf,.xlsx,.xls">
+                    <button class="btn" id="addUrl"><i class="fas fa-link"></i> Tambah dari URL</button>
+                    <button class="btn btn-success" id="addFile"><i class="fas fa-upload"></i> Unggah File</button>
+                    <button class="btn btn-danger" id="clrArsip"><i class="fas fa-trash"></i> Hapus Semua</button>
+                    <button class="btn" id="exportArsip"><i class="fas fa-download"></i> Ekspor Data</button>
+                    <button class="btn" id="importArsip"><i class="fas fa-file-import"></i> Impor Data</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="grid" id="arsipList"></div>
+            </div>
+            
+            <div class="card">
+                <div class="viewer" id="arsipViewerBox">
+                    <iframe id="arsipViewer" src=""></iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- Panel Generator Link -->
+        <section class="panel" id="generator">
+            <h2><i class="fas fa-link"></i> Generator Link Google Drive</h2>
+            
+            <div class="card">
+                <div class="option-group">
+                    <textarea id="src" placeholder="Tempel link Google Drive (satu baris per link). Boleh juga format: Nama, LINK" style="width: 100%; min-height: 120px; padding: 10px; border: 1px solid var(--border); border-radius: 4px;"></textarea>
+                </div>
+                
+                <div class="option-group">
+                    <input id="prefix" type="text" placeholder="Prefix Nama (opsional)">
+                    <input id="kelas" type="text" placeholder="Kelas (opsional)">
+                    <input id="angkatan" type="text" placeholder="Angkatan (opsional)">
+                    <button class="btn" id="genBtn"><i class="fas fa-cog"></i> Generate</button>
+                    <button class="btn btn-warning" id="clearGen"><i class="fas fa-broom"></i> Clear</button>
+                    <button class="btn" id="copyCSV"><i class="fas fa-copy"></i> Copy CSV</button>
+                    <button class="btn btn-success" id="dlCSV"><i class="fas fa-download"></i> Download CSV</button>
+                    <button class="btn" id="importJSON"><i class="fas fa-file-import"></i> Import JSON</button>
+                    <button class="btn" id="exportJSON"><i class="fas fa-file-export"></i> Export JSON</button>
+                </div>
+                
+                <div class="note">
+                    <p>Regex File ID: <code>[-\w]{25,}</code>. Kolom hasil: Nama, Link Asli, File ID, View, Direct, Thumb, Angkatan, Kelas, Catatan.</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="scroll">
+                    <table id="genTbl">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nama</th>
+                                <th>Link Drive Asli</th>
+                                <th>File ID</th>
+                                <th>View Link</th>
+                                <th>Direct Link</th>
+                                <th>Thumbnail Link</th>
+                                <th>Angkatan</th>
+                                <th>Kelas</th>
+                                <th>Catatan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Panel Statistik -->
+        <section class="panel" id="stats">
+            <h2><i class="fas fa-chart-bar"></i> Statistik Penggunaan</h2>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-conversions">0</div>
+                    <div class="stat-label">Total Konversi</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-files">0</div>
+                    <div class="stat-label">File Diproses</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-links">0</div>
+                    <div class="stat-label">Link Digenerate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-archives">0</div>
+                    <div class="stat-label">Arsip Disimpan</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Riwayat Aktivitas Terbaru</h3>
+                <div id="activity-log">
+                    <p>Belum ada aktivitas</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>© 2023 Tools Kit Komunitas | Dibuat dengan ❤️ untuk Komunitas</p>
+    </footer>
+
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        // Kode JavaScript akan ditambahkan di sini
+        // Ini adalah placeholder untuk fungsi-fungsi yang diperlukan
+        // Kode lengkap akan membutuhkan implementasi detail untuk semua fungsi
+    </script>
+</body>
+</html>

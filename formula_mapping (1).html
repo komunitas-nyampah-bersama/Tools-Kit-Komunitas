@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formula Translator - Excel ke Bahasa Indonesia</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            color: white;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            color: #2c5364;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        h3 {
+            color: #3498db;
+            margin: 15px 0 10px;
+        }
+        
+        .formula-input {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2c5364;
+        }
+        
+        .btn-secondary {
+            background-color: #7f8c8d;
+        }
+        
+        .btn-success {
+            background-color: #2ecc71;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+        }
+        
+        .result-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .formula-explanation {
+            background-color: #e8f4fc;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .example-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .function-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .function-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            cursor: pointer;
+        }
+        
+        .function-item:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .step-by-step {
+            background-color: #fff8e1;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .step {
+            margin-bottom: 15px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .step:before {
+            content: "➡️";
+            position: absolute;
+            left: 0;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            margin-top: 30px;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .formula-input {
+                flex-direction: column;
+            }
+            
+            .examples, .function-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Formula Translator</h1>
+            <p class="subtitle">Ubah formula Excel yang membingungkan menjadi bahasa Indonesia yang mudah dipahami</p>
+        </header>
+        
+        <div class="card">
+            <h2>Penerjemah Formula</h2>
+            <p>Masukkan formula Excel Anda di bawah ini dan kami akan menerjemahkannya ke bahasa Indonesia yang mudah dimengerti:</p>
+            
+            <div class="formula-input">
+                <input type="text" id="excel-formula" placeholder="Contoh: =SUM(A1:A10)" style="flex: 1;">
+                <button onclick="translateFormula()">Terjemahkan</button>
+            </div>
+            
+            <div class="result-box">
+                <h3>Hasil Terjemahan:</h3>
+                <div id="translation-result">Hasil terjemahan akan muncul di sini</div>
+            </div>
+            
+            <div class="formula-explanation">
+                <h3>Penjelasan Langkah Demi Langkah:</h3>
+                <div id="step-explanation">Penjelasan akan muncul di sini</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Fungsi Excel Populer</h2>
+            <p>Klik pada fungsi di bawah ini untuk melihat terjemahan dan penjelasannya:</p>
+            
+            <div class="function-list">
+                <div class="function-item" onclick="showFunctionExplanation('SUM')">
+                    <strong>SUM</strong>
+                    <p>Penjumlahan</p>
+                </div>
+                <div class="function-item" onclick="showFunctionExplanation('AVERAGE')">
+                    <strong>AVERAGE</strong>
+                    <p>Rata-rata</p>
+                </div>
+                <div class="function-item" onclick="showFunctionExplanation('IF')">
+                    <strong>IF</strong>
+                    <p>Pernyataan kondisi</p>
+                </div>
+                <div class="function-item" onclick="showFunctionExplanation('VLOOKUP')">
+                    <strong>VLOOKUP</strong>
+                    <p>Pencarian vertikal</p>
+                </div>
+                <div class="function-item" onclick="showFunctionExplanation('COUNTIF')">
+                    <strong>COUNTIF</strong>
+                    <p>Hitung dengan kondisi</p>
+                </div>
+                <div class="function-item" onclick="showFunctionExplanation('CONCATENATE')">
+                    <strong>CONCATENATE</strong>
+                    <p>Penggabungan teks</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Contoh Formula</h2>
+            <p>Klik pada contoh di bawah untuk mencobanya:</p>
+            
+            <div class="examples">
+                <div class="example-card" onclick="loadExample('=SUM(A1:A10)')">
+                    <h4>Penjumlahan</h4>
+                    <p><code>=SUM(A1:A10)</code></p>
+                    <p>Menjumlahkan nilai dari sel A1 sampai A10</p>
+                </div>
+                <div class="example-card" onclick="loadExample('=IF(B2>70,\"Lulus\",\"Tidak Lulus\")')">
+                    <h4>Pernyataan Kondisi</h4>
+                    <p><code>=IF(B2>70,"Lulus","Tidak Lulus")</code></p>
+                    <p>Memeriksa apakah nilai di B2 lebih besar dari 70</p>
+                </div>
+                <div class="example-card" onclick="loadExample('=VLOOKUP(D2,A2:B10,2,FALSE)')">
+                    <h4>Pencarian Data</h4>
+                    <p><code>=VLOOKUP(D2,A2:B10,2,FALSE)</code></p>
+                    <p>Mencari nilai D2 dalam range A2:B10</p>
+                </div>
+                <div class="example-card" onclick="loadExample('=COUNTIF(C1:C100,\">50\")')">
+                    <h4>Hitung dengan Kriteria</h4>
+                    <p><code>=COUNTIF(C1:C100,">50")</code></p>
+                    <p>Menghitung sel dengan nilai lebih besar dari 50</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Panduan Langkah Demi Langkah</h2>
+            <p>Berikut adalah panduan untuk memahami dan membuat formula Excel:</p>
+            
+            <div class="step-by-step">
+                <div class="step">
+                    <strong>Pilih fungsi yang sesuai dengan kebutuhan Anda</strong>
+                    <p>Apakah Anda ingin menjumlahkan, mencari, atau mengevaluasi kondisi?</p>
+                </div>
+                <div class="step">
+                    <strong>Identifikasi data yang diperlukan</strong>
+                    <p>Tentukan sel atau range mana yang akan digunakan dalam formula</p>
+                </div>
+                <div class="step">
+                    <strong>Susun parameter dengan benar</strong>
+                    <p>Setiap fungsi membutuhkan parameter tertentu, pastikan urutannya tepat</p>
+                </div>
+                <div class="step">
+                    <strong>Uji formula Anda</strong>
+                    <p>Selalu uji formula dengan data contoh untuk memastikan bekerja dengan benar</p>
+                </div>
+            </div>
+            
+            <h3>Tips Penting:</h3>
+            <ul>
+                <li>Selalu awali formula dengan tanda sama dengan (=)</li>
+                <li>Gunakan tanda kutip untuk teks dalam formula</li>
+                <li>Perhatikan penggunaan tanda koma dan titik koma tergantung regional settings</li>
+                <li>Gunakan referensi sel absolut ($A$1) atau relatif (A1) sesuai kebutuhan</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2023 Formula Translator - Membuat Formula Excel Mudah Dipahami</p>
+    </footer>
+
+    <script>
+        // Fungsi untuk menerjemahkan formula Excel
+        function translateFormula() {
+            const formula = document.getElementById('excel-formula').value.trim();
+            
+            if (!formula) {
+                alert('Masukkan formula Excel terlebih dahulu');
+                return;
+            }
+            
+            // Pengecekan apakah formula dimulai dengan =
+            if (!formula.startsWith('=')) {
+                document.getElementById('translation-result').innerHTML = 
+                    '<span style="color: red;">Error: Formula harus dimulai dengan tanda =</span>';
+                document.getElementById('step-explanation').innerHTML = 
+                    'Pastikan formula Anda diawali dengan tanda sama dengan (=). Contoh: =SUM(A1:A10)';
+                return;
+            }
+            
+            // Menghapus tanda = dari awal formula
+            const formulaWithoutEquals = formula.substring(1);
+            
+            // Memisahkan fungsi dan parameter
+            const openingParenIndex = formulaWithoutEquals.indexOf('(');
+            let functionName, parameters;
+            
+            if (openingParenIndex === -1) {
+                // Jika tidak ada tanda kurung, anggap seluruhnya sebagai fungsi tanpa parameter
+                functionName = formulaWithoutEquals;
+                parameters = [];
+            } else {
+                functionName = formulaWithoutEquals.substring(0, openingParenIndex);
+                const paramsString = formulaWithoutEquals.substring(openingParenIndex + 1, formulaWithoutEquals.length - 1);
+                parameters = splitParameters(paramsString);
+            }
+            
+            // Menerjemahkan fungsi dan parameter
+            const translatedFunction = translateFunctionName(functionName);
+            const translatedParams = parameters.map(translateParameter);
+            
+            // Menampilkan hasil terjemahan
+            let translationHTML = `<strong>${translatedFunction}</strong>`;
+            if (translatedParams.length > 0) {
+                translationHTML += ` dengan parameter: ${translatedParams.join(', ')}`;
+            }
+            
+            document.getElementById('translation-result').innerHTML = translationHTML;
+            
+            // Menampilkan penjelasan langkah demi langkah
+            document.getElementById('step-explanation').innerHTML = generateStepExplanation(functionName, parameters);
+        }
+        
+        // Memisahkan parameter dengan benar (memperhatikan tanda kutip dan kurung)
+        function splitParameters(paramString) {
+            if (!paramString) return [];
+            
+            const params = [];
+            let currentParam = '';
+            let inQuotes = false;
+            let parenDepth = 0;
+            
+            for (let i = 0; i < paramString.length; i++) {
+                const char = paramString[i];
+                
+                if (char === '"' && (i === 0 || paramString[i-1] !== '\\')) {
+                    inQuotes = !inQuotes;
+                }
+                
+                if (!inQuotes) {
+                    if (char === '(') parenDepth++;
+                    if (char === ')') parenDepth--;
+                    
+                    if (char === ',' && parenDepth === 0) {
+                        params.push(currentParam.trim());
+                        currentParam = '';
+                        continue;
+                    }
+                }
+                
+                currentParam += char;
+            }
+            
+            if (currentParam.trim() !== '') {
+                params.push(currentParam.trim());
+            }
+            
+            return params;
+        }
+        
+        // Menerjemahkan nama fungsi
+        function translateFunctionName(functionName) {
+            const functionMap = {
+                'SUM': 'JUMLAHKAN',
+                'AVERAGE': 'RATA-RATA',
+                'IF': 'JIKA',
+                'VLOOKUP': 'CARI_VERTIKAL',
+                'COUNTIF': 'HITUNG_JIKA',
+                'COUNT': 'HITUNG',
+                'MAX': 'NILAI_TERBESAR',
+                'MIN': 'NILAI_TERKECIL',
+                'CONCATENATE': 'GABUNGKAN_TEKS',
+                'LEFT': 'AMBIL_KIRI',
+                'RIGHT': 'AMBIL_KANAN',
+                'MID': 'AMBIL_TENGAH',
+                'LEN': 'PANJANG_TEKS',
+                'ROUND': 'BULATKAN',
+                'DATE': 'TANGGAL',
+                'TODAY': 'HARI_INI',
+                'NOW': 'SEKARANG'
+            };
+            
+            return functionMap[functionName.toUpperCase()] || functionName;
+        }
+        
+        // Menerjemahkan parameter
+        function translateParameter(param) {
+            // Jika parameter adalah range sel
+            if (param.includes(':') && !param.includes('"')) {
+                const parts = param.split(':');
+                return `dari ${translateCellReference(parts[0])} sampai ${translateCellReference(parts[1])}`;
+            }
+            
+            // Jika parameter adalah referensi sel
+            if (/^[A-Z]+\d+$/.test(param)) {
+                return translateCellReference(param);
+            }
+            
+            // Jika parameter adalah teks dalam kutipan
+            if (param.startsWith('"') && param.endsWith('"')) {
+                return `teks "${param.substring(1, param.length - 1)}"`;
+            }
+            
+            // Jika parameter adalah angka
+            if (!isNaN(param)) {
+                return `angka ${param}`;
+            }
+            
+            // Jika parameter adalah kondisi/perbandingan
+            if (['>', '<', '>=', '<=', '=', '<>'].some(op => param.includes(op))) {
+                return translateCondition(param);
+            }
+            
+            // Default: kembalikan parameter as-is
+            return param;
+        }
+        
+        // Menerjemahkan referensi sel
+        function translateCellReference(cellRef) {
+            return `sel ${cellRef}`;
+        }
+        
+        // Menerjemahkan kondisi
+        function translateCondition(condition) {
+            const operatorMap = {
+                '>': 'lebih besar dari',
+                '<': 'lebih kecil dari',
+                '>=': 'lebih besar atau sama dengan',
+                '<=': 'lebih kecil atau sama dengan',
+                '=': 'sama dengan',
+                '<>': 'tidak sama dengan'
+            };
+            
+            for (const [op, translation] of Object.entries(operatorMap)) {
+                if (condition.includes(op)) {
+                    const parts = condition.split(op);
+                    return `${translateParameter(parts[0].trim())} ${translation} ${translateParameter(parts[1].trim())}`;
+                }
+            }
+            
+            return condition;
+        }
+        
+        // Menghasilkan penjelasan langkah demi langkah
+        function generateStepExplanation(functionName, parameters) {
+            const functionNameUpper = functionName.toUpperCase();
+            let explanation = '';
+            
+            switch (functionNameUpper) {
+                case 'SUM':
+                    explanation = `<p>Fungsi <strong>SUM</strong> digunakan untuk menjumlahkan nilai-nilai dalam range tertentu.</p>
+                    <p>Langkah-langkah:</p>
+                    <ol>
+                        <li>Tentukan range sel yang ingin Anda jumlahkan</li>
+                        <li>Gunakan fungsi SUM dengan menyertakan range tersebut sebagai parameter</li>
+                        <li>Formula akan mengembalikan hasil penjumlahan semua nilai dalam range</li>
+                    </ol>`;
+                    break;
+                    
+                case 'IF':
+                    explanation = `<p>Fungsi <strong>IF</strong> digunakan untuk melakukan pengecekan kondisi.</p>
+                    <p>Langkah-langkah:</p>
+                    <ol>
+                        <li>Tentukan kondisi yang ingin Anda periksa</li>
+                        <li>Tentukan nilai yang akan dikembalikan jika kondisi benar (TRUE)</li>
+                        <li>Tentukan nilai yang akan dikembalikan jika kondisi salah (FALSE)</li>
+                        <li>Formula akan mengembalikan nilai sesuai dengan hasil evaluasi kondisi</li>
+                    </ol>`;
+                    break;
+                    
+                case 'VLOOKUP':
+                    explanation = `<p>Fungsi <strong>VLOOKUP</strong> digunakan untuk mencari nilai dalam tabel secara vertikal.</p>
+                    <p>Langkah-langkah:</p>
+                    <ol>
+                        <li>Tentukan nilai yang ingin Anda cari</li>
+                        <li>Tentukan range tabel tempat pencarian akan dilakukan</li>
+                        <li>Tentukan nomor kolom dari nilai yang ingin dikembalikan</li>
+                        <li>Tentukan apakah Anda membutuhkan pencarian yang exact (FALSE) atau approximate (TRUE)</li>
+                        <li>Formula akan mengembalikan nilai dari kolom yang ditentukan pada baris yang ditemukan</li>
+                    </ol>`;
+                    break;
+                    
+                default:
+                    explanation = `<p>Fungsi <strong>${functionName}</strong> dieksekusi dengan parameter yang diberikan.</p>
+                    <p>Pastikan parameter yang Anda berikan sudah sesuai dengan kebutuhan fungsi.</p>`;
+            }
+            
+            return explanation;
+        }
+        
+        // Memuat contoh formula
+        function loadExample(formula) {
+            document.getElementById('excel-formula').value = formula;
+            translateFormula();
+        }
+        
+        // Menampilkan penjelasan fungsi yang dipilih
+        function showFunctionExplanation(functionName) {
+            const explanations = {
+                'SUM': 'Menjumlahkan semua angka dalam range yang ditentukan',
+                'AVERAGE': 'Menghitung rata-rata nilai dalam range yang ditentukan',
+                'IF': 'Menentukan nilai berdasarkan kondisi yang diperiksa',
+                'VLOOKUP': 'Mencari nilai tertentu dalam kolom pertama tabel dan mengembalikan nilai dari kolom yang ditentukan dalam baris yang sama',
+                'COUNTIF': 'Menghitung jumlah sel dalam range yang memenuhi kriteria tertentu',
+                'CONCATENATE': 'Menggabungkan beberapa teks menjadi satu teks'
+            };
+            
+            document.getElementById('excel-formula').value = `=${functionName}()`;
+            document.getElementById('translation-result').innerHTML = 
+                `<strong>${translateFunctionName(functionName)}</strong>: ${explanations[functionName]}`;
+            
+            document.getElementById('step-explanation').innerHTML = 
+                generateStepExplanation(functionName, []);
+        }
+    </script>
+</body>
+</html>
