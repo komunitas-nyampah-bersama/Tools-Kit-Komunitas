@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Sistem Akademik</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --info: #4895ef;
+            --warning: #f72585;
+            --danger: #e63946;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --bg-color: #f5f7fa;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+            --sidebar-width: 250px;
+            --header-height: 60px;
+        }
+
+        .dark-mode {
+            --bg-color: #121826;
+            --light: #1e293b;
+            --dark: #f8f9fa;
+            --gray: #94a3b8;
+            --light-gray: #334155;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--dark);
+            line-height: 1.6;
+            transition: var(--transition);
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Layout */
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px 0;
+            transition: var(--transition);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar.collapsed {
+            width: 60px;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .menu-text {
+            transition: var(--transition);
+        }
+
+        .sidebar.collapsed .menu-text {
+            display: none;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            transition: var(--transition);
+        }
+
+        .main-content.expanded {
+            margin-left: 60px;
+        }
+
+        .header {
+            height: var(--header-height);
+            background-color: var(--light);
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        /* Auth */
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .auth-card {
+            background-color: var(--light);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .auth-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--light);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-card-icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .stat-card-title {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-card-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            background-color: var(--light);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: var(--transition);
+            background-color: var(--light);
+            color: var(--dark);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-success {
+            background-color: var(--success);
+        }
+
+        .btn-success:hover {
+            background-color: #3aafd6;
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+        }
+
+        .btn-warning:hover {
+            background-color: #d61f6d;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Loader */
+        .loader {
+            display: none;
+            border: 3px solid var(--light-gray);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--light);
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        /* Utilities */
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .badge-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        .badge-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .badge-info {
+            background-color: var(--info);
+            color: white;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 60px;
+            }
+            
+            .sidebar .menu-text {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 60px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Section -->
+    <div id="auth-section" class="auth-container">
+        <div class="auth-card">
+            <h2 class="auth-title"><i class="fas fa-lock"></i> Admin Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required placeholder="Masukkan email admin">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="Masukkan password">
+                </div>
+                
+                <button type="submit" class="btn" style="width: 100%;">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+            </form>
+            <div class="loader" id="auth-loader"></div>
+            <div class="alert alert-error" id="auth-alert"></div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="admin-panel" class="admin-container" style="display: none;">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span class="menu-text">Admin Panel</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li class="menu-item active" data-target="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="menu-text">Dashboard</span>
+                </li>
+                <li class="menu-item" data-target="pengajuan">
+                    <i class="fas fa-file-alt"></i>
+                    <span class="menu-text">Pengajuan</span>
+                </li>
+                <li class="menu-item" data-target="pembayaran">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span class="menu-text">Pembayaran</span>
+                </li>
+                <li class="menu-item" data-target="tugas">
+                    <i class="fas fa-tasks"></i>
+                    <span class="menu-text">Tugas</span>
+                </li>
+                <li class="menu-item" data-target="aktivitas">
+                    <i class="fas fa-history"></i>
+                    <span class="menu-text">Aktivitas</span>
+                </li>
+                <li class="menu-item" data-target="pengguna">
+                    <i class="fas fa-users"></i>
+                    <span class="menu-text">Pengguna</span>
+                </li>
+                <li class="menu-item" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="menu-text">Logout</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content" id="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-left">
+                    <h2 id="page-title">Dashboard</h2>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-sm" id="theme-toggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div id="admin-name">Administrator</div>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="content">
+                <!-- Alerts -->
+                <div class="alert alert-success" id="alert-success"></div>
+                <div class="alert alert-error" id="alert-error"></div>
+
+                <!-- Dashboard Section -->
+                <div class="section active" id="dashboard-section">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-card-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="stat-card-title">Total Pengajuan</div>
+                            <div class="stat-card-value" id="total-pengajuan">0</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-card-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="stat-card-title">Pembayaran</div>
+                            <div class="stat-card-value" id="total-pembayaran">0</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-card-icon">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <div class="stat-card-title">Tugas</div>
+                            <div class="stat-card-value" id="total-tugas">0</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-card-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-card-title">Pengguna</div>
+                            <div class="stat-card-value" id="total-pengguna">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">
+                            <span>Aktivitas Terbaru</span>
+                            <button class="btn btn-sm" id="refresh-activities">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                        <div class="table-container">
+                            <table id="recent-activities-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>User</th>
+                                        <th>Aktivitas</th>
+                                        <th>Detail</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="4" style="text-align: center;">Memuat data...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pengajuan Section -->
+                <div class="section" id="pengajuan-section">
+                    <h2 class="section-title"><i class="fas fa-file-alt"></i> Kelola Pengajuan</h2>
+                    
+                    <div class="card">
+                        <div class="card-title">
+                            <span>Daftar Pengajuan</span>
+                            <div>
+                                <select id="filter-status-pengajuan" style="width: auto; display: inline-block; margin-right: 10px;">
+                                    <option value="all">Semua Status</option>
+                                    <option value="Menunggu Review">Menunggu Review</option>
+                                    <option value="Disetujui">Disetujui</option>
+                                    <option value="Ditolak">Ditolak</option>
+                                </select>
+                                <button class="btn btn-sm" id="refresh-pengajuan">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table id="pengajuan-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>User</th>
+                                        <th>Jenis</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="5" style="text-align: center;">Memuat data...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pembayaran Section -->
+                <div class="section" id="pembayaran-section">
+                    <h2 class="section-title"><i class="fas fa-money-bill-wave"></i> Kelola Pembayaran</h2>
+                    
+                    <div class="card">
+                        <div class="card-title">
+                            <span>Daftar Pembayaran</span>
+                            <div>
+                                <select id="filter-status-pembayaran" style="width: auto; display: inline-block; margin-right: 10px;">
+                                    <option value="all">Semua Status</option>
+                                    <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+                                    <option value="Terverifikasi">Terverifikasi</option>
+                                    <option value="Ditolak">Ditolak</option>
+                                </select>
+                                <button class="btn btn-sm" id="refresh-pembayaran">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table id="pembayaran-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>User</th>
+                                        <th>Jenis</th>
+                                        <th>Jumlah</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="6" style="text-align: center;">Memuat data...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tugas Section -->
+                <div class="section" id="tugas-section">
+                    <h2 class="section-title"><i class="fas fa-tasks"></i> Kelola Tugas</h2>
+                    
+                    <div class="card">
+                        <div class="card-title">
+                            <span>Daftar Tugas</span>
+                            <button class="btn btn-sm" id="refresh-tugas">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                        <div class="table-container">
+                            <table id="tugas-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>User</th>
+                                        <th>Mata Kuliah</th>
+                                        <th>Judul</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="6" style="text-align: center;">Memuat data...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aktivitas Section -->
+                <div class="section" id="aktivitas-section">
+                    <h2 class="section-title"><i class="fas fa-history"></i> Kelola Aktivitas</h2>
+                    
+                    <div class="card">
+                        <div class="card-title">
+                            <span>Log Aktivitas</span>
+                            <div>
+                                <input type="date" id="filter-tanggal-aktivitas" style="width: auto; display: inline-block; margin-right: 10px;">
+                                <button class="btn btn-sm" id="refresh-aktivitas">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table id="aktivitas-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>User</th>
+                                        <th>Jenis</th>
+                                        <th>Aktivitas</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="4" style="text-align: center;">Memuat data...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pengguna Section -->
+                <div class="section" id="pengguna-section">
+                    <h2 class="section-title"><i class="fas fa-users"></i> Kelola Pengguna</h2>
+                    
+                    <div class="card">
+                        <div class="card-title">
+                            <span>Daftar Pengguna</span>
+                            <button class="btn btn-sm" id="tambah-pengguna">
+                                <i class="fas fa-plus"></i> Tambah
+                            </button>
+                        </div>
+                        <div class="table-container">
+                            <table id="pengguna-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nama</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="5" style="text-align: center;">Memuat data...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detail -->
+    <div class="modal" id="detail-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="modal-title">Detail</h2>
+            <div id="modal-content">
+                <!-- Konten modal akan diisi oleh JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="edit-modal-title">Edit Data</h2>
+            <form id="edit-form">
+                <div id="edit-form-content">
+                    <!-- Form edit akan diisi oleh JavaScript -->
+                </div>
+                <button type="submit" class="btn" style="margin-top: 20px;">
+                    <i class="fas fa-save"></i> Simpan Perubahan
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Konfigurasi Supabase
+        const SUPABASE_URL = 'https://weueopblwiliyjqaaqvb.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndldWVvcGJsd2lsaXlqcWFhcXZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTUxODI5MzUsImV4cCI6MjAzMDc1ODkzNX0.9V2I5uFmR2xHkf0QYd4Q5kQ5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q';
+        
+        // Inisialisasi Supabase
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // State aplikasi
+        let currentUser = null;
+        let currentSection = 'dashboard';
+        
+        // Inisialisasi aplikasi
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthState();
+            initEventListeners();
+        });
+        
+        // Cek status autentikasi
+        async function checkAuthState() {
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (session) {
+                currentUser = session.user;
+                showAdminPanel();
+                loadData();
+            } else {
+                showAuthSection();
+            }
+        }
+        
+        // Inisialisasi event listeners
+        function initEventListeners() {
+            // Login form
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            
+            // Logout
+            document.getElementById('logout-btn').addEventListener('click', handleLogout);
+            
+            // Sidebar toggle
+            document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
+            
+            // Menu items
+            document.querySelectorAll('.menu-item').forEach(item => {
+                if (item.id !== 'logout-btn') {
+                    item.addEventListener('click', function() {
+                        switchSection(this.getAttribute('data-target'));
+                    });
+                }
+            });
+            
+            // Theme toggle
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+            
+            // Refresh buttons
+            document.getElementById('refresh-activities').addEventListener('click', loadRecentActivities);
+            document.getElementById('refresh-pengajuan').addEventListener('click', loadPengajuan);
+            document.getElementById('refresh-pembayaran').addEventListener('click', loadPembayaran);
+            document.getElementById('refresh-tugas').addEventListener('click', loadTugas);
+            document.getElementById('refresh-aktivitas').addEventListener('click', loadAktivitas);
+            
+            // Filter events
+            document.getElementById('filter-status-pengajuan').addEventListener('change', loadPengajuan);
+            document.getElementById('filter-status-pembayaran').addEventListener('change', loadPembayaran);
+            document.getElementById('filter-tanggal-aktivitas').addEventListener('change', loadAktivitas);
+            
+            // Modal close
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.style.display = 'none';
+                    });
+                });
+            });
+            
+            // Tambah pengguna
+            document.getElementById('tambah-pengguna').addEventListener('click', showTambahPengguna);
+        }
+        
+        // Handle login
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            showLoader('auth', true);
+            hideAlerts();
+            
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) throw error;
+                
+                currentUser = data.user;
+                showAdminPanel();
+                loadData();
+            } catch (error) {
+                showAlert('auth', error.message, 'error');
+            } finally {
+                showLoader('auth', false);
+            }
+        }
+        
+        // Handle logout
+        async function handleLogout() {
+            const { error } = await supabase.auth.signOut();
+            
+            if (error) {
+                showAlert('error', error.message, 'error');
+            } else {
+                currentUser = null;
+                showAuthSection();
+            }
+        }
+        
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+        
+        // Toggle theme
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const icon = document.querySelector('#theme-toggle i');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                localStorage.setItem('theme', 'light');
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        }
+        
+        // Switch section
+        function switchSection(section) {
+            // Update menu
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            document.querySelector(`.menu-item[data-target="${section}"]`).classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            
+            document.getElementById(`${section}-section`).classList.add('active');
+            
+            // Update page title
+            document.getElementById('page-title').textContent = document.querySelector(`.menu-item[data-target="${section}"] .menu-text`).textContent;
+            
+            // Load section data
+            currentSection = section;
+            
+            if (section === 'pengajuan') {
+                loadPengajuan();
+            } else if (section === 'pembayaran') {
+                loadPembayaran();
+            } else if (section === 'tugas') {
+                loadTugas();
+            } else if (section === 'aktivitas') {
+                loadAktivitas();
+            } else if (section === 'pengguna') {
+                loadPengguna();
+            }
+        }
+        
+        // Show auth section
+        function showAuthSection() {
+            document.getElementById('auth-section').style.display = 'flex';
+            document.getElementById('admin-panel').style.display = 'none';
+        }
+        
+        // Show admin panel
+        function showAdminPanel() {
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('admin-panel').style.display = 'flex';
+            
+            // Set admin name
+            document.getElementById('admin-name').textContent = currentUser.email;
+            
+            // Check saved theme
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                const icon = document.querySelector('#theme-toggle i');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+        }
+        
+        // Load data
+        async function loadData() {
+            loadDashboard();
+            loadRecentActivities();
+        }
+        
+        // Load dashboard
+        async function loadDashboard() {
+            try {
+                // Hitung total pengajuan
+                const { count: totalPengajuan, error: errorPengajuan } = await supabase
+                    .from('pengajuan')
+                    .select('*', { count: 'exact', head: true });
+                
+                if (!errorPengajuan) {
+                    document.getElementById('total-pengajuan').textContent = totalPengajuan;
+                }
+                
+                // Hitung total pembayaran
+                const { count: totalPembayaran, error: errorPembayaran } = await supabase
+                    .from('pembayaran')
+                    .select('*', { count: 'exact', head: true });
+                
+                if (!errorPembayaran) {
+                    document.getElementById('total-pembayaran').textContent = totalPembayaran;
+                }
+                
+                // Hitung total tugas
+                const { count: totalTugas, error: errorTugas } = await supabase
+                    .from('tugas')
+                    .select('*', { count: 'exact', head: true });
+                
+                if (!errorTugas) {
+                    document.getElementById('total-tugas').textContent = totalTugas;
+                }
+                
+                // Hitung total pengguna
+                const { count: totalPengguna, error: errorPengguna } = await supabase
+                    .from('profiles')
+                    .select('*', { count: 'exact', head: true });
+                
+                if (!errorPengguna) {
+                    document.getElementById('total-pengguna').textContent = totalPengguna;
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+        
+        // Load recent activities
+        async function loadRecentActivities() {
+            const tableBody = document.querySelector('#recent-activities-table tbody');
+            tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Memuat data...</td></tr>';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('aktivitas')
+                    .select(`
+                        *,
+                        profiles (nama)
+                    `)
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+                
+                if (error) throw error;
+                
+                if (data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Tidak ada data aktivitas</td></tr>';
+                    return;
+                }
+                
+                tableBody.innerHTML = data.map(item => `
+                    <tr>
+                        <td>${new Date(item.created_at).toLocaleDateString('id-ID')}</td>
+                        <td>${item.profiles?.nama || 'Unknown'}</td>
+                        <td>${item.jenis}</td>
+                        <td>${item.deskripsi}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading activities:', error);
+                tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Gagal memuat data</td></tr>';
+            }
+        }
+        
+        // Load pengajuan
+        async function loadPengajuan() {
+            const tableBody = document.querySelector('#pengajuan-table tbody');
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr>';
+            
+            const statusFilter = document.getElementById('filter-status-pengajuan').value;
+            
+            try {
+                let query = supabase
+                    .from('pengajuan')
+                    .select(`
+                        *,
+                        profiles (nama)
+                    `)
+                    .order('created_at', { ascending: false });
+                
+                if (statusFilter !== 'all') {
+                    query = query.eq('status', statusFilter);
+                }
+                
+                const { data, error } = await query;
+                
+                if (error) throw error;
+                
+                if (data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Tidak ada data pengajuan</td></tr>';
+                    return;
+                }
+                
+                tableBody.innerHTML = data.map(item => `
+                    <tr>
+                        <td>${new Date(item.created_at).toLocaleDateString('id-ID')}</td>
+                        <td>${item.profiles?.nama || 'Unknown'}</td>
+                        <td>${item.jenis}</td>
+                        <td><span class="badge ${getStatusBadgeClass(item.status)}">${item.status}</span></td>
+                        <td>
+                            <button class="btn btn-sm" onclick="showDetail('pengajuan', ${item.id})">
+                                <i class="fas fa-eye"></i> Detail
+                            </button>
+                            <button class="btn btn-sm btn-success" onclick="updateStatus('pengajuan', ${item.id}, 'Disetujui')">
+                                <i class="fas fa-check"></i> Setuju
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="updateStatus('pengajuan', ${item.id}, 'Ditolak')">
+                                <i class="fas fa-times"></i> Tolak
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading pengajuan:', error);
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Gagal memuat data</td></tr>';
+            }
+        }
+        
+        // Load pembayaran
+        async function loadPembayaran() {
+            const tableBody = document.querySelector('#pembayaran-table tbody');
+            tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Memuat data...</td></tr>';
+            
+            const statusFilter = document.getElementById('filter-status-pembayaran').value;
+            
+            try {
+                let query = supabase
+                    .from('pembayaran')
+                    .select(`
+                        *,
+                        profiles (nama)
+                    `)
+                    .order('created_at', { ascending: false });
+                
+                if (statusFilter !== 'all') {
+                    query = query.eq('status', statusFilter);
+                }
+                
+                const { data, error } = await query;
+                
+                if (error) throw error;
+                
+                if (data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Tidak ada data pembayaran</td></tr>';
+                    return;
+                }
+                
+                tableBody.innerHTML = data.map(item => `
+                    <tr>
+                        <td>${new Date(item.created_at).toLocaleDateString('id-ID')}</td>
+                        <td>${item.profiles?.nama || 'Unknown'}</td>
+                        <td>${item.jenis}</td>
+                        <td>Rp ${parseInt(item.jumlah).toLocaleString('id-ID')}</td>
+                        <td><span class="badge ${getStatusBadgeClass(item.status)}">${item.status}</span></td>
+                        <td>
+                            <button class="btn btn-sm" onclick="showDetail('pembayaran', ${item.id})">
+                                <i class="fas fa-eye"></i> Detail
+                            </button>
+                            <button class="btn btn-sm btn-success" onclick="updateStatus('pembayaran', ${item.id}, 'Terverifikasi')">
+                                <i class="fas fa-check"></i> Verifikasi
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="updateStatus('pembayaran', ${item.id}, 'Ditolak')">
+                                <i class="fas fa-times"></i> Tolak
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading pembayaran:', error);
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Gagal memuat data</td></tr>';
+            }
+        }
+        
+        // Load tugas
+        async function loadTugas() {
+            const tableBody = document.querySelector('#tugas-table tbody');
+            tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Memuat data...</td></tr>';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('tugas')
+                    .select(`
+                        *,
+                        profiles (nama)
+                    `)
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                if (data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Tidak ada data tugas</td></tr>';
+                    return;
+                }
+                
+                tableBody.innerHTML = data.map(item => `
+                    <tr>
+                        <td>${new Date(item.created_at).toLocaleDateString('id-ID')}</td>
+                        <td>${item.profiles?.nama || 'Unknown'}</td>
+                        <td>${item.mata_kuliah}</td>
+                        <td>${item.judul}</td>
+                        <td><span class="badge badge-success">${item.status}</span></td>
+                        <td>
+                            <button class="btn btn-sm" onclick="showDetail('tugas', ${item.id})">
+                                <i class="fas fa-eye"></i> Detail
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteData('tugas', ${item.id})">
+                                <i class="fas fa-trash"></i> Hapus
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading tugas:', error);
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Gagal memuat data</td></tr>';
+            }
+        }
+        
+        // Load aktivitas
+        async function loadAktivitas() {
+            const tableBody = document.querySelector('#aktivitas-table tbody');
+            tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Memuat data...</td></tr>';
+            
+            const dateFilter = document.getElementById('filter-tanggal-aktivitas').value;
+            
+            try {
+                let query = supabase
+                    .from('aktivitas')
+                    .select(`
+                        *,
+                        profiles (nama)
+                    `)
+                    .order('created_at', { ascending: false });
+                
+                if (dateFilter) {
+                    const startDate = new Date(dateFilter);
+                    const endDate = new Date(dateFilter);
+                    endDate.setDate(endDate.getDate() + 1);
+                    
+                    query = query.gte('created_at', startDate.toISOString()).lt('created_at', endDate.toISOString());
+                }
+                
+                const { data, error } = await query;
+                
+                if (error) throw error;
+                
+                if (data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Tidak ada data aktivitas</td></tr>';
+                    return;
+                }
+                
+                tableBody.innerHTML = data.map(item => `
+                    <tr>
+                        <td>${new Date(item.created_at).toLocaleString('id-ID')}</td>
+                        <td>${item.profiles?.nama || 'Unknown'}</td>
+                        <td>${item.jenis}</td>
+                        <td>${item.deskripsi}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading aktivitas:', error);
+                tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Gagal memuat data</td></tr>';
+            }
+        }
+        
+        // Load pengguna
+        async function loadPengguna() {
+            const tableBody = document.querySelector('#pengguna-table tbody');
+            tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr>';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                if (data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Tidak ada data pengguna</td></tr>';
+                    return;
+                }
+                
+                tableBody.innerHTML = data.map(user => `
+                    <tr>
+                        <td>${user.nama || 'Tidak ada nama'}</td>
+                        <td>${user.email}</td>
+                        <td>${user.role || 'user'}</td>
+                        <td><span class="badge badge-success">Aktif</span></td>
+                        <td>
+                            <button class="btn btn-sm" onclick="editUser(${user.id})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">
+                                <i class="fas fa-trash"></i> Hapus
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading pengguna:', error);
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Gagal memuat data</td></tr>';
+            }
+        }
+        
+        // Show detail
+        async function showDetail(table, id) {
+            try {
+                const { data, error } = await supabase
+                    .from(table)
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                
+                if (error) throw error;
+                
+                const modal = document.getElementById('detail-modal');
+                const modalTitle = document.getElementById('modal-title');
+                const modalContent = document.getElementById('modal-content');
+                
+                modalTitle.textContent = `Detail ${table}`;
+                
+                let content = '';
+                for (const key in data) {
+                    if (key !== 'id' && key !== 'user_id') {
+                        let value = data[key];
+                        
+                        if (key === 'created_at' || key === 'updated_at') {
+                            value = new Date(value).toLocaleString('id-ID');
+                        }
+                        
+                        if (key === 'jumlah') {
+                            value = 'Rp ' + parseInt(value).toLocaleString('id-ID');
+                        }
+                        
+                        content += `<p><strong>${key}:</strong> ${value}</p>`;
+                    }
+                }
+                
+                modalContent.innerHTML = content;
+                modal.style.display = 'flex';
+            } catch (error) {
+                console.error('Error loading detail:', error);
+                showAlert('error', 'Gagal memuat detail', 'error');
+            }
+        }
+        
+        // Update status
+        async function updateStatus(table, id, status) {
+            try {
+                const { error } = await supabase
+                    .from(table)
+                    .update({ status: status })
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                showAlert('success', `Status berhasil diubah menjadi ${status}`, 'success');
+                
+                // Reload data
+                if (table === 'pengajuan') {
+                    loadPengajuan();
+                } else if (table === 'pembayaran') {
+                    loadPembayaran();
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                showAlert('error', 'Gagal mengubah status', 'error');
+            }
+        }
+        
+        // Delete data
+        async function deleteData(table, id) {
+            if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
+            
+            try {
+                const { error } = await supabase
+                    .from(table)
+                    .delete()
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                showAlert('success', 'Data berhasil dihapus', 'success');
+                
+                // Reload data
+                if (table === 'tugas') {
+                    loadTugas();
+                }
+            } catch (error) {
+                console.error('Error deleting data:', error);
+                showAlert('error', 'Gagal menghapus data', 'error');
+            }
+        }
+        
+        // Get status badge class
+        function getStatusBadgeClass(status) {
+            if (status === 'Disetujui' || status === 'Terverifikasi') {
+                return 'badge-success';
+            } else if (status === 'Menunggu Review' || status === 'Menunggu Verifikasi') {
+                return 'badge-warning';
+            } else if (status === 'Ditolak') {
+                return 'badge-danger';
+            } else {
+                return 'badge-info';
+            }
+        }
+        
+        // Show alert
+        function showAlert(type, message, alertType) {
+            const alert = document.getElementById(`alert-${alertType}`);
+            alert.textContent = message;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Show loader
+        function showLoader(type, show) {
+            const loader = document.getElementById(`${type}-loader`);
+            loader.style.display = show ? 'block' : 'none';
+        }
+        
+        // Hide alerts
+        function hideAlerts() {
+            document.getElementById('auth-alert').style.display = 'none';
+        }
+        
+        // Tambah pengguna
+        function showTambahPengguna() {
+            // Implementasi form tambah pengguna
+            alert('Fitur tambah pengguna akan diimplementasikan di sini');
+        }
+        
+        // Edit user
+        function editUser(userId) {
+            // Implementasi form edit pengguna
+            alert('Fitur edit pengguna akan diimplementasikan di sini');
+        }
+        
+        // Delete user
+        function deleteUser(userId) {
+            if (!confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) return;
+            
+            // Implementasi hapus pengguna
+            alert('Fitur hapus pengguna akan diimplementasikan di sini');
+        }
+    </script>
+</body>
+</html>

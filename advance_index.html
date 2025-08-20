@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Tools Kit Komunitas - NFT Powered Toolkit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #06b6d4;
+            --success: #22c55e;
+            --danger: #f43f5e;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #6b7280;
+            --border: #e5e7eb;
+            --card-bg: #ffffff;
+            --text: #111827;
+            --text-muted: #6b7280;
+            --bg-gradient: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            --sidebar-width: 280px;
+            --header-height: 70px;
+        }
+
+        .dark-mode {
+            --bg-gradient: linear-gradient(135deg, #0a0a0a, #1a1a1a, #2d2d2d);
+            --card-bg: #1f2937;
+            --text: #f9fafb;
+            --text-muted: #9ca3af;
+            --border: #4b5563;
+            --light: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s, transform 0.3s;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(31, 41, 55, 0.95);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header h2 {
+            margin: 10px 0 5px;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .sidebar-header p {
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+
+        .search-container {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .search-container input::placeholder {
+            color: #9ca3af;
+        }
+
+        .nav-menu {
+            padding: 15px 0;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .nav-item:hover {
+            background: rgba(79, 70, 229, 0.2);
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+        }
+
+        .category-title {
+            padding: 15px 20px 5px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9ca3af;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            color: var(--primary);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Dashboard Styles */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: rgba(79, 70, 229, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Tools Grid */
+        .section-title {
+            margin: 30px 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-title h2 {
+            color: var(--text);
+            font-size: 1.5rem;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .tool-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            border: 1px solid var(--border);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .tool-header {
+            padding: 20px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tool-body {
+            padding: 20px;
+        }
+
+        .tool-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .tool-desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .tool-meta {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .tool-tag {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        /* NFT Badge */
+        .nft-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #ffd700, #ffa500);
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animation Keyframes */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Utility Classes */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--gray);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-20 {
+            margin-bottom: 20px;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Notification Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-bg);
+            color: var(--text);
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideUp 0.3s ease;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Web3 Connect Button */
+        .web3-connect {
+            background: linear-gradient(135deg, #f7931a, #e6007d);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .web3-connect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* NFT Gallery */
+        .nft-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .nft-item {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .nft-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .nft-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .nft-info {
+            padding: 15px;
+        }
+
+        .nft-title {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .nft-desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .nft-price {
+            font-weight: bold;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-toolbox fa-2x" style="color: #4f46e5;"></i>
+                </div>
+                <h2>Tools Kit Komunitas</h2>
+                <p>NFT-Powered Toolkit</p>
+            </div>
+
+            <div class="search-container">
+                <input type="text" placeholder="Cari tools..." id="searchInput">
+            </div>
+
+            <div class="nav-menu">
+                <div class="category-title">Menu Utama</div>
+                <div class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" data-section="tools">
+                    <i class="fas fa-tools"></i>
+                    <span>Semua Tools</span>
+                </div>
+                <div class="nav-item" data-section="nft">
+                    <i class="fas fa-coins"></i>
+                    <span>NFT Marketplace</span>
+                </div>
+                <div class="nav-item" data-section="web3">
+                    <i class="fas fa-link"></i>
+                    <span>Web3 Integration</span>
+                </div>
+
+                <div class="category-title">Kategori Tools</div>
+                <div class="nav-item" data-category="converter">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Konverter Data</span>
+                </div>
+                <div class="nav-item" data-category="glide">
+                    <i class="fas fa-table"></i>
+                    <span>Google Glide</span>
+                </div>
+                <div class="nav-item" data-category="web">
+                    <i class="fas fa-code"></i>
+                    <span>Web Tools</span>
+                </div>
+                <div class="nav-item" data-category="nft-tools">
+                    <i class="fas fa-paint-brush"></i>
+                    <span>NFT Tools</span>
+                </div>
+                <div class="nav-item" data-category="finance">
+                    <i class="fas fa-dollar-sign"></i>
+                    <span>Financial Tools</span>
+                </div>
+
+                <div class="category-title">Akun Saya</div>
+                <div class="nav-item" data-section="profile">
+                    <i class="fas fa-user"></i>
+                    <span>Profil</span>
+                </div>
+                <div class="nav-item" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Pengaturan</span>
+                </div>
+                <div class="nav-item" id="connectWalletBtn">
+                    <i class="fas fa-wallet"></i>
+                    <span>Connect Wallet</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <div class="header-left">
+                    <button class="btn btn-primary" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1>Dashboard</h1>
+                </div>
+                <div class="user-menu">
+                    <button class="web3-connect" id="web3Connect">
+                        <i class="fas fa-plug"></i>
+                        Connect Wallet
+                    </button>
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div class="section-content" id="dashboardSection">
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <h3>Total Tools</h3>
+                            <div class="stat-icon">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value">24</div>
+                        <div class="stat-label">Tools tersedia</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <h3>Pengguna Aktif</h3>
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value">1,243</div>
+                        <div class="stat-label">Pengguna bulan ini</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <h3>NFT Tools</h3>
+                            <div class="stat-icon">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value">8</div>
+                        <div class="stat-label">Tools terverifikasi</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <h3>Transactions</h3>
+                            <div class="stat-icon">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value">542</div>
+                        <div class="stat-label">Transaksi NFT</div>
+                    </div>
+                </div>
+
+                <div class="section-title">
+                    <h2>Tools Terpopuler</h2>
+                    <a href="#" class="btn btn-secondary">Lihat Semua</a>
+                </div>
+
+                <div class="tools-grid">
+                    <!-- Tool Cards will be dynamically generated here -->
+                </div>
+
+                <div class="section-title">
+                    <h2>NFT Tools Terbaru</h2>
+                    <a href="#" class="btn btn-secondary">Jelajahi Marketplace</a>
+                </div>
+
+                <div class="nft-gallery">
+                    <!-- NFT Items will be dynamically generated here -->
+                </div>
+            </div>
+
+            <!-- Other Sections (initially hidden) -->
+            <div class="section-content" id="toolsSection" style="display: none;">
+                <h2>Semua Tools</h2>
+                <!-- Tools content will be loaded here -->
+            </div>
+
+            <div class="section-content" id="nftSection" style="display: none;">
+                <h2>NFT Marketplace</h2>
+                <!-- NFT Marketplace content will be loaded here -->
+            </div>
+
+            <div class="section-content" id="web3Section" style="display: none;">
+                <h2>Web3 Integration</h2>
+                <!-- Web3 Integration content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Toggle -->
+    <div class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <!-- Web3 Modal -->
+    <div class="modal" id="web3Modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Connect Wallet</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Pilih wallet untuk terhubung:</p>
+                <div class="wallet-options">
+                    <button class="btn btn-primary" style="width: 100%; justify-content: center; margin: 10px 0;">
+                        <i class="fab fa-metamask"></i> MetaMask
+                    </button>
+                    <button class="btn btn-primary" style="width: 100%; justify-content: center; margin: 10px 0;">
+                        <i class="fas fa-wallet"></i> WalletConnect
+                    </button>
+                    <button class="btn btn-primary" style="width: 100%; justify-content: center; margin: 10px 0;">
+                        <i class="fas fa-coins"></i> Binance Chain Wallet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for tools
+        const toolsData = [
+            {
+                id: 1,
+                name: "Konverter Excel ke JSON",
+                description: "Unggah file Excel atau CSV dan konversi ke format JSON dengan mudah.",
+                icon: "fas fa-exchange-alt",
+                category: "converter",
+                url: "jsonconverted2.html",
+                isNft: false,
+                popularity: 95
+            },
+            {
+                id: 2,
+                name: "Glide Tools Suite",
+                description: "Generator link Google Drive untuk Glide + Arsip PDF/Excel dengan viewer.",
+                icon: "fas fa-table",
+                category: "glide",
+                url: "glide_tools_suite.html",
+                isNft: true,
+                popularity: 88
+            },
+            {
+                id: 3,
+                name: "NFT Karbon Tools",
+                description: "Alat untuk membuat dan mengelola NFT dengan fitur ramah lingkungan.",
+                icon: "fas fa-leaf",
+                category: "nft-tools",
+                url: "karbon_nft.html",
+                isNft: true,
+                popularity: 92
+            },
+            {
+                id: 4,
+                name: "Struk Pembayaran",
+                description: "Generator struk pembayaran profesional dengan berbagai template.",
+                icon: "fas fa-receipt",
+                category: "finance",
+                url: "strukbayar.html",
+                isNft: false,
+                popularity: 78
+            },
+            {
+                id: 5,
+                name: "Form Builder",
+                description: "Buat form kustom dengan drag & drop tanpa perlu coding.",
+                icon: "fas fa-wpforms",
+                category: "web",
+                url: "form_builder.html",
+                isNft: true,
+                popularity: 85
+            },
+            {
+                id: 6,
+                name: "Advanced Data Processor",
+                description: "Alat analisis data lanjutan dengan visualisasi dan ekspor berbagai format.",
+                icon: "fas fa-chart-line",
+                category: "converter",
+                url: "advance_data.html",
+                isNft: true,
+                popularity: 90
+            }
+        ];
+
+        // Sample data for NFT items
+        const nftData = [
+            {
+                id: 1,
+                name: "Glide Pro Tools",
+                description: "Koleksi tools profesional untuk Google Glide",
+                image: "https://via.placeholder.com/300x200/4f46e5/ffffff?text=Glide+Pro",
+                price: "0.5 ETH",
+                owner: "0x1234...abcd"
+            },
+            {
+                id: 2,
+                name: "NFT Generator Suite",
+                description: "Tools lengkap untuk membuat dan mengelola NFT",
+                image: "https://via.placeholder.com/300x200/06b6d4/ffffff?text=NFT+Generator",
+                price: "0.8 ETH",
+                owner: "0x5678...efgh"
+            },
+            {
+                id: 3,
+                name: "Data Converter Premium",
+                description: "Konverter data dengan fitur tambahan dan tanpa batas",
+                image: "https://via.placeholder.com/300x200/22c55e/ffffff?text=Data+Converter",
+                price: "0.3 ETH",
+                owner: "0x9012...ijkl"
+            }
+        ];
+
+        // DOM Elements
+        const sidebar = document.getElementById('sidebar');
+        const menuToggle = document.getElementById('menuToggle');
+        const themeToggle = document.getElementById('themeToggle');
+        const navItems = document.querySelectorAll('.nav-item');
+        const sectionContents = document.querySelectorAll('.section-content');
+        const toolsGrid = document.querySelector('.tools-grid');
+        const nftGallery = document.querySelector('.nft-gallery');
+        const web3Connect = document.getElementById('web3Connect');
+        const web3Modal = document.getElementById('web3Modal');
+        const connectWalletBtn = document.getElementById('connectWalletBtn');
+
+        // Initialize the dashboard
+        function initDashboard() {
+            // Load popular tools
+            renderPopularTools();
+            
+            // Load NFT items
+            renderNftItems();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Check if Web3 is available
+            checkWeb3Availability();
+        }
+
+        // Render popular tools
+        function renderPopularTools() {
+            // Clear existing content
+            toolsGrid.innerHTML = '';
+            
+            // Sort tools by popularity and get top 4
+            const popularTools = [...toolsData].sort((a, b) => b.popularity - a.popularity).slice(0, 4);
+            
+            // Generate tool cards
+            popularTools.forEach(tool => {
+                const toolCard = document.createElement('div');
+                toolCard.className = 'tool-card';
+                toolCard.innerHTML = `
+                    ${tool.isNft ? '<div class="nft-badge">NFT</div>' : ''}
+                    <div class="tool-header">
+                        <i class="${tool.icon}"></i>
+                        <h3 class="tool-title">${tool.name}</h3>
+                    </div>
+                    <div class="tool-body">
+                        <p class="tool-desc">${tool.description}</p>
+                        <div class="tool-meta">
+                            <span>${tool.popularity}% populer</span>
+                            <span>${tool.category}</span>
+                        </div>
+                        <span class="tool-tag">#${tool.category}</span>
+                    </div>
+                `;
+                
+                // Add click event to open the tool
+                toolCard.addEventListener('click', () => {
+                    window.open(tool.url, '_blank');
+                });
+                
+                toolsGrid.appendChild(toolCard);
+            });
+        }
+
+        // Render NFT items
+        function renderNftItems() {
+            // Clear existing content
+            nftGallery.innerHTML = '';
+            
+            // Generate NFT items
+            nftData.forEach(nft => {
+                const nftItem = document.createElement('div');
+                nftItem.className = 'nft-item';
+                nftItem.innerHTML = `
+                    <img src="${nft.image}" alt="${nft.name}" class="nft-image">
+                    <div class="nft-info">
+                        <h3 class="nft-title">${nft.name}</h3>
+                        <p class="nft-desc">${nft.description}</p>
+                        <div class="nft-price">${nft.price}</div>
+                        <div class="nft-owner">Pemilik: ${nft.owner}</div>
+                    </div>
+                `;
+                
+                nftGallery.appendChild(nftItem);
+            });
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Menu toggle for mobile
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+            });
+
+            // Theme toggle
+            themeToggle.addEventListener('click', toggleTheme);
+
+            // Navigation items
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const section = item.dataset.section;
+                    const category = item.dataset.category;
+                    
+                    if (section) {
+                        // Show the selected section
+                        showSection(section);
+                        
+                        // Update active nav item
+                        navItems.forEach(nav => nav.classList.remove('active'));
+                        item.classList.add('active');
+                    } else if (category) {
+                        // Filter tools by category
+                        filterToolsByCategory(category);
+                        
+                        // Update active nav item
+                        navItems.forEach(nav => {
+                            if (nav.dataset.category) {
+                                nav.classList.remove('active');
+                            }
+                        });
+                        item.classList.add('active');
+                        
+                        // Show tools section
+                        showSection('tools');
+                    }
+                    
+                    // Close sidebar on mobile after selection
+                    if (window.innerWidth < 992) {
+                        sidebar.classList.remove('active');
+                    }
+                });
+            });
+
+            // Web3 connect buttons
+            web3Connect.addEventListener('click', () => {
+                web3Modal.style.display = 'flex';
+            });
+
+            connectWalletBtn.addEventListener('click', () => {
+                web3Modal.style.display = 'flex';
+            });
+
+            // Close modal when clicking on X
+            document.querySelector('.close').addEventListener('click', () => {
+                web3Modal.style.display = 'none';
+            });
+
+            // Close modal when clicking outside
+            window.addEventListener('click', (event) => {
+                if (event.target === web3Modal) {
+                    web3Modal.style.display = 'none';
+                }
+            });
+
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                filterTools(searchTerm);
+            });
+        }
+
+        // Show the selected section
+        function showSection(sectionId) {
+            // Hide all sections
+            sectionContents.forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show the selected section
+            document.getElementById(`${sectionId}Section`).style.display = 'block';
+            
+            // Load section content if needed
+            if (sectionId === 'tools') {
+                loadAllTools();
+            } else if (sectionId === 'nft') {
+                loadNftMarketplace();
+            } else if (sectionId === 'web3') {
+                loadWeb3Integration();
+            }
+        }
+
+        // Load all tools
+        function loadAllTools() {
+            const toolsSection = document.getElementById('toolsSection');
+            toolsSection.innerHTML = `
+                <div class="section-title">
+                    <h2>Semua Tools</h2>
+                    <div>
+                        <button class="btn btn-primary" id="sortPopular">Populer</button>
+                        <button class="btn btn-secondary" id="sortNew">Terbaru</button>
+                    </div>
+                </div>
+                <div class="tools-grid" id="allToolsGrid"></div>
+            `;
+            
+            const allToolsGrid = document.getElementById('allToolsGrid');
+            
+            // Generate all tool cards
+            toolsData.forEach(tool => {
+                const toolCard = document.createElement('div');
+                toolCard.className = 'tool-card';
+                toolCard.innerHTML = `
+                    ${tool.isNft ? '<div class="nft-badge">NFT</div>' : ''}
+                    <div class="tool-header">
+                        <i class="${tool.icon}"></i>
+                        <h3 class="tool-title">${tool.name}</h3>
+                    </div>
+                    <div class="tool-body">
+                        <p class="tool-desc">${tool.description}</p>
+                        <div class="tool-meta">
+                            <span>${tool.popularity}% populer</span>
+                            <span>${tool.category}</span>
+                        </div>
+                        <span class="tool-tag">#${tool.category}</span>
+                    </div>
+                `;
+                
+                // Add click event to open the tool
+                toolCard.addEventListener('click', () => {
+                    window.open(tool.url, '_blank');
+                });
+                
+                allToolsGrid.appendChild(toolCard);
+            });
+            
+            // Add event listeners for sorting
+            document.getElementById('sortPopular').addEventListener('click', () => {
+                // Sort by popularity logic would go here
+                alert('Disortir berdasarkan popularitas');
+            });
+            
+            document.getElementById('sortNew').addEventListener('click', () => {
+                // Sort by newest logic would go here
+                alert('Disortir berdasarkan terbaru');
+            });
+        }
+
+        // Load NFT Marketplace
+        function loadNftMarketplace() {
+            const nftSection = document.getElementById('nftSection');
+            nftSection.innerHTML = `
+                <div class="section-title">
+                    <h2>NFT Marketplace</h2>
+                    <button class="btn btn-primary">Buat NFT Tool</button>
+                </div>
+                <p>Jelajahi dan beli tools eksklusif berbasis NFT untuk mendapatkan akses penuh dan fitur premium.</p>
+                <div class="nft-gallery" id="marketplaceGallery"></div>
+            `;
+            
+            const marketplaceGallery = document.getElementById('marketplaceGallery');
+            
+            // Generate marketplace NFT items
+            nftData.forEach(nft => {
+                const nftItem = document.createElement('div');
+                nftItem.className = 'nft-item';
+                nftItem.innerHTML = `
+                    <img src="${nft.image}" alt="${nft.name}" class="nft-image">
+                    <div class="nft-info">
+                        <h3 class="nft-title">${nft.name}</h3>
+                        <p class="nft-desc">${nft.description}</p>
+                        <div class="nft-price">${nft.price}</div>
+                        <div class="nft-owner">Pemilik: ${nft.owner}</div>
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 10px;">Beli Sekarang</button>
+                    </div>
+                `;
+                
+                marketplaceGallery.appendChild(nftItem);
+            });
+        }
+
+        // Load Web3 Integration
+        function loadWeb3Integration() {
+            const web3Section = document.getElementById('web3Section');
+            web3Section.innerHTML = `
+                <div class="card">
+                    <h3><i class="fas fa-link"></i> Integrasi Web3</h3>
+                    <p>Terhubung dengan blockchain untuk mengakses fitur-fitur NFT dan smart contract.</p>
+                    
+                    <div class="web3-status" id="web3Status">
+                        <p>Status: <span id="connectionStatus">Tidak terhubung</span></p>
+                        <p>Network: <span id="networkInfo">-</span></p>
+                        <p>Account: <span id="accountInfo">-</span></p>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="connectWeb3">Connect Wallet</button>
+                    <button class="btn btn-secondary" id="disconnectWeb3" style="display: none;">Disconnect</button>
+                    
+                    <div class="note" style="margin-top: 20px;">
+                        <h4>Fitur Web3:</h4>
+                        <ul>
+                            <li>Membeli dan menjual tools sebagai NFT</li>
+                            <li>Smart contract untuk lisensi tools</li>
+                            <li>Royalty otomatis untuk pembuat tools</li>
+                            <li>Proof-of-ownership untuk tools premium</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners for Web3 connection
+            document.getElementById('connectWeb3').addEventListener('click', connectWeb3);
+            document.getElementById('disconnectWeb3').addEventListener('click', disconnectWeb3);
+        }
+
+        // Filter tools by search term
+        function filterTools(searchTerm) {
+            // Implementation would filter tools based on search term
+            console.log('Searching for:', searchTerm);
+        }
+
+        // Filter tools by category
+        function filterToolsByCategory(category) {
+            // Implementation would filter tools based on category
+            console.log('Filtering by category:', category);
+        }
+
+        // Toggle between light and dark theme
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const icon = themeToggle.querySelector('i');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Check if Web3 is available
+        function checkWeb3Availability() {
+            if (typeof window.ethereum !== 'undefined') {
+                console.log('Web3 detected!');
+                web3Connect.innerHTML = '<i class="fas fa-plug"></i> Connect Wallet';
+                connectWalletBtn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
+            } else {
+                console.log('No Web3 detected');
+                web3Connect.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Install Web3 Wallet';
+                connectWalletBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Install Web3 Wallet';
+            }
+        }
+
+        // Connect to Web3
+        function connectWeb3() {
+            alert('Fungsi connectWeb3 akan diimplementasi dengan library Web3 seperti MetaMask');
+            // Implementation would connect to Ethereum wallet
+        }
+
+        // Disconnect from Web3
+        function disconnectWeb3() {
+            alert('Fungsi disconnectWeb3 akan memutuskan koneksi wallet');
+            // Implementation would disconnect wallet
+        }
+
+        // Initialize the dashboard when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', initDashboard);
+
+        // Load saved theme from localStorage
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeToggle.querySelector('i').classList.remove('fa-moon');
+            themeToggle.querySelector('i').classList.add('fa-sun');
+        }
+    </script>
+</body>
+</html>
