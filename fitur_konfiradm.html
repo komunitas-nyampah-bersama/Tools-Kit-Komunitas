@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Konfirmasi Pembayaran Mahasiswa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #2c3e50, #4a6491);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .admin-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .admin-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #4a6491;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            background-color: #4a6491;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+        }
+        
+        .btn:hover {
+            background-color: #3a547e;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+        }
+        
+        .member-info {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4a6491;
+        }
+        
+        .member-info h3 {
+            color: #4a6491;
+            margin-bottom: 15px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .info-item {
+            margin-bottom: 10px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #4a6491;
+        }
+        
+        .payment-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .status-paid {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-unpaid {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .receipt {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
+            max-width: 500px;
+            margin: 20px auto;
+        }
+        
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .receipt-details {
+            margin-bottom: 30px;
+        }
+        
+        .receipt-details .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .receipt-details .detail-label {
+            font-weight: bold;
+        }
+        
+        .signature-area {
+            margin-top: 40px;
+            text-align: right;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #333;
+            width: 200px;
+            margin-left: auto;
+            margin-bottom: 5px;
+        }
+        
+        .signature-label {
+            font-style: italic;
+        }
+        
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .receipt, .receipt * {
+                visibility: visible;
+            }
+            .receipt {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+            }
+            .action-buttons {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .admin-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistem Konfirmasi Pembayaran Mahasiswa</h1>
+            <p class="subtitle">Kelola pembayaran dan generate struk konfirmasi</p>
+        </header>
+        
+        <div class="admin-section">
+            <div class="admin-header">
+                <h2>Panel Admin</h2>
+                <button class="btn" id="resetFormBtn">Reset Form</button>
+            </div>
+            
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchNIM" placeholder="Cari berdasarkan NIM...">
+            </div>
+            
+            <div id="memberInfo" class="member-info" style="display: none;">
+                <h3>Data Mahasiswa</h3>
+                <div class="info-grid" id="memberData">
+                    <!-- Data mahasiswa akan diisi di sini -->
+                </div>
+            </div>
+            
+            <div class="admin-form">
+                <div>
+                    <div class="form-group">
+                        <label for="nama">Nama Lengkap</label>
+                        <input type="text" id="nama" disabled>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="nim">NIM</label>
+                        <input type="text" id="nim" disabled>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="statusDikti">Status DIKTI</label>
+                        <input type="text" id="statusDikti" disabled>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pembayaran">Jumlah Pembayaran (Rp)</label>
+                        <input type="number" id="pembayaran">
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="form-group">
+                        <label for="statusPembayaran">Status Pembayaran</label>
+                        <select id="statusPembayaran">
+                            <option value="BELUM BAYAR">Belum Bayar</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="LUNAS">Lunas</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tanggalPembayaran">Tanggal Pembayaran</label>
+                        <input type="date" id="tanggalPembayaran">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="metodePembayaran">Metode Pembayaran</label>
+                        <select id="metodePembayaran">
+                            <option value="TRANSFER">Transfer Bank</option>
+                            <option value="TUNAI">Tunai</option>
+                            <option value="E-WALLET">E-Wallet</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="keterangan">Keterangan</label>
+                        <textarea id="keterangan" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-success" id="simpanBtn">Simpan Perubahan</button>
+                <button class="btn" id="generateReceiptBtn">Generate Struk</button>
+            </div>
+        </div>
+        
+        <div class="receipt" id="receipt" style="display: none;">
+            <div class="receipt-header">
+                <h2>STUK KONFIRMASI PEMBAYARAN</h2>
+                <p>Komunitas "Nyampah Bersama"</p>
+            </div>
+            
+            <div class="receipt-details" id="receiptDetails">
+                <!-- Detail struk akan diisi di sini -->
+            </div>
+            
+            <div class="signature-area">
+                <div class="signature-line"></div>
+                <p class="signature-label">Tanda Tangan Admin</p>
+                <p id="adminName">Nama Admin</p>
+                <p id="currentDate">Tanggal</p>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn" onclick="window.print()">Cetak Struk</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data mahasiswa (biasanya dari database)
+        const mahasiswaData = [
+            { no: 1, nama: "Abida Tazkiya Azzahroh", nim: "222301004", statusDikti: "AKTIF", pembayaran: 7375000, statusPembayaran: "LUNAS", tanggalPembayaran: "2023-10-15", metodePembayaran: "TRANSFER", keterangan: "Pembayaran lunas" },
+            { no: 2, nama: "Adnan Abdul Malik", nim: "222301006", statusDikti: "AKTIF", pembayaran: 3655000, statusPembayaran: "PENDING", tanggalPembayaran: "2023-10-18", metodePembayaran: "E-WALLET", keterangan: "Menunggu konfirmasi" },
+            { no: 3, nama: "Agus Kurniadi", nim: "222301008", statusDikti: "AKTIF", pembayaran: 2980000, statusPembayaran: "BELUM BAYAR", tanggalPembayaran: "", metodePembayaran: "", keterangan: "KONTAK TIDAK AKTIF" },
+            { no: 4, nama: "Agus Saripudin", nim: "222301009", statusDikti: "AKTIF", pembayaran: 8375000, statusPembayaran: "LUNAS", tanggalPembayaran: "2023-10-20", metodePembayaran: "TRANSFER", keterangan: "" },
+            { no: 5, nama: "Agustiawan", nim: "222301010", statusDikti: "AKTIF", pembayaran: 7375000, statusPembayaran: "LUNAS", tanggalPembayaran: "2023-10-22", metodePembayaran: "TUNAI", keterangan: "" }
+        ];
+
+        // Simpan data ke localStorage jika belum ada
+        if (!localStorage.getItem('mahasiswaData')) {
+            localStorage.setItem('mahasiswaData', JSON.stringify(mahasiswaData));
+        }
+
+        // Ambil data dari localStorage
+        let currentData = JSON.parse(localStorage.getItem('mahasiswaData'));
+        let currentMember = null;
+
+        // Format angka ke format mata uang Indonesia
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(amount);
+        }
+
+        // Format tanggal ke format Indonesia
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('id-ID', options);
+        }
+
+        // Cari mahasiswa berdasarkan NIM
+        function searchMember() {
+            const nim = document.getElementById('searchNIM').value.trim();
+            const memberInfo = document.getElementById('memberInfo');
+            const memberData = document.getElementById('memberData');
+            
+            if (!nim) {
+                alert('Masukkan NIM untuk mencari data mahasiswa');
+                return;
+            }
+            
+            const member = currentData.find(m => m.nim === nim);
+            
+            if (!member) {
+                alert('Mahasiswa dengan NIM ' + nim + ' tidak ditemukan');
+                memberInfo.style.display = 'none';
+                return;
+            }
+            
+            currentMember = member;
+            
+            // Tampilkan data mahasiswa
+            memberData.innerHTML = `
+                <div class="info-item">
+                    <span class="info-label">Nama:</span> ${member.nama}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">NIM:</span> ${member.nim}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Status DIKTI:</span> ${member.statusDikti}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Pembayaran:</span> ${formatCurrency(member.pembayaran)}
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Status Pembayaran:</span>
+                    <span class="payment-status status-${member.statusPembayaran.toLowerCase().replace(' ', '-')}">
+                        ${member.statusPembayaran}
+                    </span>
+                </div>
+            `;
+            
+            memberInfo.style.display = 'block';
+            
+            // Isi form dengan data mahasiswa
+            document.getElementById('nama').value = member.nama;
+            document.getElementById('nim').value = member.nim;
+            document.getElementById('statusDikti').value = member.statusDikti;
+            document.getElementById('pembayaran').value = member.pembayaran;
+            document.getElementById('statusPembayaran').value = member.statusPembayaran;
+            document.getElementById('tanggalPembayaran').value = member.tanggalPembayaran;
+            document.getElementById('metodePembayaran').value = member.metodePembayaran;
+            document.getElementById('keterangan').value = member.keterangan;
+        }
+
+        // Simpan perubahan data mahasiswa
+        function saveChanges() {
+            if (!currentMember) {
+                alert('Cari mahasiswa terlebih dahulu');
+                return;
+            }
+            
+            // Ambil nilai dari form
+            const pembayaran = document.getElementById('pembayaran').value;
+            const statusPembayaran = document.getElementById('statusPembayaran').value;
+            const tanggalPembayaran = document.getElementById('tanggalPembayaran').value;
+            const metodePembayaran = document.getElementById('metodePembayaran').value;
+            const keterangan = document.getElementById('keterangan').value;
+            
+            // Validasi input
+            if (!pembayaran) {
+                alert('Jumlah pembayaran harus diisi');
+                return;
+            }
+            
+            if (statusPembayaran === 'LUNAS' && !tanggalPembayaran) {
+                alert('Tanggal pembayaran harus diisi untuk status LUNAS');
+                return;
+            }
+            
+            // Update data mahasiswa
+            const index = currentData.findIndex(m => m.nim === currentMember.nim);
+            if (index !== -1) {
+                currentData[index] = {
+                    ...currentData[index],
+                    pembayaran: parseInt(pembayaran),
+                    statusPembayaran,
+                    tanggalPembayaran,
+                    metodePembayaran,
+                    keterangan
+                };
+                
+                // Simpan ke localStorage
+                localStorage.setItem('mahasiswaData', JSON.stringify(currentData));
+                
+                alert('Data berhasil diperbarui');
+                searchMember(); // Refresh tampilan
+            }
+        }
+
+        // Generate struk pembayaran
+        function generateReceipt() {
+            if (!currentMember) {
+                alert('Cari mahasiswa terlebih dahulu');
+                return;
+            }
+            
+            const receipt = document.getElementById('receipt');
+            const receiptDetails = document.getElementById('receiptDetails');
+            
+            // Isi detail struk
+            receiptDetails.innerHTML = `
+                <div class="detail-item">
+                    <span class="detail-label">Nama Mahasiswa:</span>
+                    <span>${currentMember.nama}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">NIM:</span>
+                    <span>${currentMember.nim}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Status DIKTI:</span>
+                    <span>${currentMember.statusDikti}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Jumlah Pembayaran:</span>
+                    <span>${formatCurrency(currentMember.pembayaran)}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Status Pembayaran:</span>
+                    <span>${currentMember.statusPembayaran}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Tanggal Pembayaran:</span>
+                    <span>${formatDate(currentMember.tanggalPembayaran)}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Metode Pembayaran:</span>
+                    <span>${currentMember.metodePembayaran}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Keterangan:</span>
+                    <span>${currentMember.keterangan || '-'}</span>
+                </div>
+            `;
+            
+            // Isi informasi admin dan tanggal
+            document.getElementById('adminName').textContent = "Admin Universitas";
+            document.getElementById('currentDate').textContent = formatDate(new Date());
+            
+            // Tampilkan struk
+            receipt.style.display = 'block';
+            
+            // Scroll ke struk
+            receipt.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('searchNIM').value = '';
+            document.getElementById('memberInfo').style.display = 'none';
+            document.getElementById('nama').value = '';
+            document.getElementById('nim').value = '';
+            document.getElementById('statusDikti').value = '';
+            document.getElementById('pembayaran').value = '';
+            document.getElementById('statusPembayaran').value = 'BELUM BAYAR';
+            document.getElementById('tanggalPembayaran').value = '';
+            document.getElementById('metodePembayaran').value = 'TRANSFER';
+            document.getElementById('keterangan').value = '';
+            document.getElementById('receipt').style.display = 'none';
+            currentMember = null;
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cari mahasiswa saat tombol Enter ditekan di input NIM
+            document.getElementById('searchNIM').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    searchMember();
+                }
+            });
+            
+            // Simpan perubahan
+            document.getElementById('simpanBtn').addEventListener('click', saveChanges);
+            
+            // Generate struk
+            document.getElementById('generateReceiptBtn').addEventListener('click', generateReceipt);
+            
+            // Reset form
+            document.getElementById('resetFormBtn').addEventListener('click', resetForm);
+        });
+    </script>
+</body>
+</html>

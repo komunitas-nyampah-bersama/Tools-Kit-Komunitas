@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Mahasiswa Reguler 2022/1444</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #2c3e50, #4a6491);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+        }
+        
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .filter-btn {
+            padding: 8px 15px;
+            background-color: #f1f1f1;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .filter-btn.active {
+            background-color: #4a6491;
+            color: white;
+        }
+        
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            flex: 1;
+            min-width: 200px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #4a6491;
+        }
+        
+        .stat-card .count {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            background-color: #4a6491;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        th:hover {
+            background-color: #3a547e;
+        }
+        
+        th::after {
+            content: '';
+            display: inline-block;
+            margin-left: 5px;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid #fff;
+            opacity: 0.5;
+        }
+        
+        tr {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        tr:hover {
+            background-color: #f0f5ff;
+        }
+        
+        .status-aktif {
+            border-left: 4px solid #4caf50;
+        }
+        
+        .status-no-data {
+            border-left: 4px solid #ff9800;
+        }
+        
+        .status-dikeluarkan {
+            border-left: 4px solid #f44336;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+        
+        .pagination button {
+            padding: 8px 12px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .pagination button.active {
+            background-color: #4a6491;
+            color: white;
+            border-color: #4a6491;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #888;
+        }
+        
+        .close-btn:hover {
+            color: #333;
+        }
+        
+        .modal-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .modal-header h2 {
+            color: #2c3e50;
+        }
+        
+        .info-group {
+            margin-bottom: 15px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #4a6491;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            padding: 8px 12px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #777;
+        }
+        
+        @media (max-width: 768px) {
+            th:nth-child(4),
+            td:nth-child(4) {
+                display: none;
+            }
+            
+            .stat-card {
+                min-width: 140px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Data Mahasiswa Reguler 2022/1444</h1>
+            <p class="subtitle">Informasi lengkap data mahasiswa beserta status dan pembayaran</p>
+        </header>
+        
+        <div class="controls">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Cari nama, NIM, atau status...">
+            </div>
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">Semua</button>
+                <button class="filter-btn" data-filter="AKTIF">Aktif</button>
+                <button class="filter-btn" data-filter="NO DATA">No Data</button>
+                <button class="filter-btn" data-filter="DIKELUARKAN">Dikeluarkan</button>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Mahasiswa</h3>
+                <div class="count" id="totalCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Status Aktif</h3>
+                <div class="count" id="aktifCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>No Data</h3>
+                <div class="count" id="noDataCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Dikeluarkan</h3>
+                <div class="count" id="dikeluarkanCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Pembayaran</h3>
+                <div class="count" id="totalPembayaran">0</div>
+            </div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th data-sort="no">No</th>
+                    <th data-sort="nama">Nama</th>
+                    <th data-sort="nim">NIM</th>
+                    <th data-sort="statusDikti">Status DIKTI</th>
+                    <th data-sort="pembayaran">Pembayaran</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody id="dataBody">
+                <!-- Data akan diisi oleh JavaScript -->
+            </tbody>
+        </table>
+        
+        <div class="pagination" id="pagination">
+            <!-- Pagination akan diisi oleh JavaScript -->
+        </div>
+        
+        <footer>
+            <p>&copy; 2023 Data Mahasiswa Reguler. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- Modal untuk detail mahasiswa -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeModal">&times;</span>
+            <div class="modal-header">
+                <h2 id="modalTitle">Detail Mahasiswa</h2>
+            </div>
+            <div id="modalContent">
+                <!-- Konten modal akan diisi oleh JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data mahasiswa dari Excel yang diubah menjadi JSON
+        const mahasiswaData = [
+            { no: 1, nama: "Abida Tazkiya Azzahroh", nim: "222301004", statusDikti: "AKTIF", pembayaran: 7375000, keterangan: "" },
+            { no: 2, nama: "Adnan Abdul Malik", nim: "222301006", statusDikti: "AKTIF", pembayaran: 3655000, keterangan: "" },
+            { no: 3, nama: "Agus Kurniadi", nim: "222301008", statusDikti: "AKTIF", pembayaran: 2980000, keterangan: "KONTAK TIDAK AKTIF" },
+            { no: 4, nama: "Agus Saripudin", nim: "222301009", statusDikti: "AKTIF", pembayaran: 8375000, keterangan: "" },
+            { no: 5, nama: "Agustiawan", nim: "222301010", statusDikti: "AKTIF", pembayaran: 7375000, keterangan: "" },
+            { no: 6, nama: "Ahmad Qonit Abdullah", nim: "222301014", statusDikti: "AKTIF", pembayaran: 6875000, keterangan: "" },
+            { no: 7, nama: "Aisyah Na'Im Qibtiyah", nim: "222301016", statusDikti: "AKTIF", pembayaran: 7375000, keterangan: "" },
+            { no: 8, nama: "Aldi Pratama", nim: "222301017", statusDikti: "AKTIF", pembayaran: 4525000, keterangan: "" },
+            { no: 9, nama: "Alfat Aldorian Meizandy", nim: "222301018", statusDikti: "AKTIF", pembayaran: 7375000, keterangan: "" },
+            { no: 10, nama: "Ali Zakia Mahmudi", nim: "222301019", statusDikti: "AKTIF", pembayaran: 8375000, keterangan: "" },
+            { no: 11, nama: "Aliya Putri Adila", nim: "222301020", statusDikti: "AKTIF", pembayaran: 6875000, keterangan: "" },
+            { no: 12, nama: "Almira Miftaqul Rauufi Prasetya", nim: "222301021", statusDikti: "AKTIF", pembayaran: 7875000, keterangan: "" },
+            { no: 13, nama: "Annisa Firdaus", nim: "222301022", statusDikti: "AKTIF", pembayaran: 7375000, keterangan: "" },
+            { no: 14, nama: "Arini Husnul Lafifah", nim: "222301023", statusDikti: "AKTIF", pembayaran: 3100000, keterangan: "NO RESPON" },
+            { no: 15, nama: "Aura Azzahraah Paramadeta", nim: "222301027", statusDikti: "AKTIF", pembayaran: 6135000, keterangan: "" },
+            { no: 16, nama: "Balqis Syafiqoh", nim: "222301030", statusDikti: "AKTIF", pembayaran: 7875000, keterangan: "" },
+            { no: 17, nama: "Bambang Pujianto", nim: "222301031", statusDikti: "NO DATA", pembayaran: 5080000, keterangan: "" },
+            { no: 18, nama: "Belinda Pertiwi", nim: "222301032", statusDikti: "AKTIF", pembayaran: 7875000, keterangan: "" },
+            { no: 19, nama: "Dede Nuriman", nim: "222301035", statusDikti: "AKTIF", pembayaran: 3470000, keterangan: "NO RESPON" },
+            { no: 20, nama: "Deny Sigit Prasetiya", nim: "222301037", statusDikti: "AKTIF", pembayaran: 7425000, keterangan: "" },
+            { no: 21, nama: "Dzakifachruddin Masyhur", nim: "222301039", statusDikti: "AKTIF", pembayaran: 6505000, keterangan: "" },
+            { no: 22, nama: "Edi Prayitno", nim: "222301040", statusDikti: "DIKELUARKAN", pembayaran: 10125000, keterangan: "" },
+            { no: 23, nama: "Eka Pebriyanti", nim: "222301041", statusDikti: "DIKELUARKAN", pembayaran: 1860000, keterangan: "KONTAK TIDAK AKTIF" },
+            { no: 24, nama: "Fatimah Zahra", nim: "222301049", statusDikti: "AKTIF", pembayaran: 7375000, keterangan: "" },
+            { no: 25, nama: "Febry Jutany Rusvianto", nim: "222301052", statusDikti: "AKTIF", pembayaran: 4395000, keterangan: "" },
+            { no: 26, nama: "Fikriyana Sukanto", nim: "222301054", statusDikti: "AKTIF", pembayaran: 7875000, keterangan: "" },
+            { no: 27, nama: "Fratasik Hippy", nim: "222301055", statusDikti: "DIKELUARKAN", pembayaran: 3915000, keterangan: "KONTAK TIDAK AKTIF" },
+            { no: 28, nama: "Habibah", nim: "222301056", statusDikti: "AKTIF", pembayaran: 7375000, keterangan: "" },
+            { no: 29, nama: "Hasanah", nim: "222301058", statusDikti: "AKTIF", pembayaran: 7375000, keterangan: "" },
+            { no: 30, nama: "Huwaida", nim: "222301061", statusDikti: "AKTIF", pembayaran: 7375000, keterangan: "" },
+            { no: 31, nama: "Ibnu Mahfudin", nim: "222301062", statusDikti: "AKTIF", pembayaran: 7875000, keterangan: "" },
+            { no: 32, nama: "Ibnu Qoyyim Al Jauziyah", nim: "222301063", statusDikti: "DIKELUARKAN", pembayaran: 2175000, keterangan: "NO RESPON" },
+            { no: 33, nama: "Iffah Ummu Labibah", nim: "222301064", statusDikti: "AKTIF", pembayaran: 7375000, keterangan: "" },
+            { no: 34, nama: "Ihsanudin", nim: "222301065", statusDikti: "AKTIF", pembayaran: 4470000, keterangan: "" },
+            { no: 35, nama: "Ilda Yanti", nim: "222301066", statusDikti: "AKTIF", pembayaran: 7875000, keterangan: "" },
+            { no: 36, nama: "Imam Zarkasi", nim: "222301068", statusDikti: "AKTIF", pembayaran: 3600000, keterangan: "" },
+            { no: 37, nama: "Isa Akhmad", nim: "222301069", statusDikti: "AKTIF", pembayaran: 7375000, keterangan: "" },
+            { no: 38, nama: "Lailatul Qodriyah Kautsari", nim: "222301077", statusDikti: "AKTIF", pembayaran: 7375000, keterangan: "" },
+            { no: 39, nama: "Maritza Shafiyah Callysta", nim: "222301083", statusDikti: "AKTIF", pembayaran: 7875000, keterangan: "" },
+            { no: 40, nama: "Mariyah", nim: "222301084", statusDikti: "AKTIF", pembayaran: 6875000, keterangan: "" },
+            { no: 41, nama: "Marzuki", nim: "222301085", statusDikti: "AKTIF", pembayaran: 2545000, keterangan: "NO RESPON" },
+            { no: 42, nama: "Masmudi", nim: "222301087", statusDikti: "AKTIF", pembayaran: 6375000, keterangan: "" },
+            { no: 43, nama: "Mhd. Kemal Thariq", nim: "222301089", statusDikti: "AKTIF", pembayaran: 7320000, keterangan: "DI DIKTI NAMANYA MHD. KEMAL THARIQ MHD" },
+            { no: 44, nama: "Muh. Alawi Machfudz", nim: "222301093", statusDikti: "AKTIF", pembayaran: 6135000, keterangan: "" },
+            { no: 45, nama: "Muhammad Faisal Aji", nim: "222301102", statusDikti: "AKTIF", pembayaran: 4840000, keterangan: "" },
+            { no: 46, nama: "Muhammad Ghifari", nim: "222301104", statusDikti: "AKTIF", pembayaran: 7375000, keterangan: "" },
+            { no: 47, nama: "Muhammad Muhaimi", nim: "222301108", statusDikti: "AKTIF", pembayaran: 7875000, keterangan: "" },
+            { no: 48, nama: "Naila Elfarisdah", nim: "222301112", statusDikti: "AKTIF", pembayaran: 7005000, keterangan: "" },
+            { no: 49, nama: "Nirmala Erya Vania", nim: "222301114", statusDikti: "AKTIF", pembayaran: 6375000, keterangan: "" },
+            { no: 50, nama: "Nisa Amalia", nim: "222301115", statusDikti: "NO DATA", pembayaran: 1805000, keterangan: "KONTAK TIDAK AKTIF" },
+            { no: 51, nama: "Nur Aisyah Putri", nim: "222301116", statusDikti: "AKTIF", pembayaran: 5820000, keterangan: "" },
+            { no: 52, nama: "Olivia Rosalia Putri", nim: "222301121", statusDikti: "AKTIF", pembayaran: 6875000, keterangan: "" },
+            { no: 53, nama: "Pipih Ratnasari", nim: "222301122", statusDikti: "AKTIF", pembayaran: 6575000, keterangan: "" },
+            { no: 54, nama: "Putri Annajma Khairani Hafid", nim: "222301123", statusDikti: "AKTIF", pembayaran: 7875000, keterangan: "" },
+            { no: 55, nama: "Putri Azzahra", nim: "222301124", statusDikti: "DIKELUARKAN", pembayaran: 4895000, keterangan: "" },
+            { no: 56, nama: "Qoonitatudz Dzakiyah", nim: "222301126", statusDikti: "AKTIF", pembayaran: 6320000, keterangan: "" },
+            { no: 57, nama: "Rahmat Fajri", nim: "222301127", statusDikti: "AKTIF", pembayaran: 7875000, keterangan: "" },
+            { no: 58, nama: "Ramadhani", nim: "222301129", statusDikti: "DIKELUARKAN", pembayaran: 2545000, keterangan: "" },
+            { no: 59, nama: "Rifdah Ulya Kautsari (cuti)", nim: "222301132", statusDikti: "AKTIF", pembayaran: 6875000, keterangan: "" },
+            { no: 60, nama: "Robani", nim: "222301138", statusDikti: "AKTIF", pembayaran: 7190000, keterangan: "" },
+            { no: 61, nama: "Rofiqa", nim: "222301139", statusDikti: "AKTIF", pembayaran: 6375000, keterangan: "" },
+            { no: 62, nama: "Rohman", nim: "222301140", statusDikti: "DIKELUARKAN", pembayaran: 2360000, keterangan: "" },
+            { no: 63, nama: "Rosid Ridho", nim: "222301141", statusDikti: "AKTIF", pembayaran: 4710000, keterangan: "" },
+            { no: 64, nama: "Salma Khairunnisa", nim: "222301144", statusDikti: "AKTIF", pembayaran: 7375000, keterangan: "" },
+            { no: 65, nama: "Siti Alimah", nim: "(NO NIM)", statusDikti: "NO DATA", pembayaran: 7875000, keterangan: "" },
+            { no: 66, nama: "Siti Alini", nim: "222301150", statusDikti: "DIKELUARKAN", pembayaran: 2785000, keterangan: "" },
+            { no: 67, nama: "Siti Hajar", nim: "222301154", statusDikti: "NO DATA", pembayaran: 2615000, keterangan: "" },
+            { no: 68, nama: "Syifa Zhafira", nim: "222301167", statusDikti: "AKTIF", pembayaran: 6875000, keterangan: "" },
+            { no: 69, nama: "Syumaila Al Husna", nim: "222301168", statusDikti: "DIKELUARKAN", pembayaran: 5895000, keterangan: "" },
+            { no: 70, nama: "Umaimah", nim: "222301174", statusDikti: "AKTIF", pembayaran: 5265000, keterangan: "" },
+            { no: 71, nama: "Uswaty Choirunnisa'", nim: "222301179", statusDikti: "AKTIF", pembayaran: 6690000, keterangan: "" },
+            { no: 72, nama: "Uti Ma'Rifah", nim: "222301180", statusDikti: "AKTIF", pembayaran: 7875000, keterangan: "" },
+            { no: 73, nama: "Wella Ratu Khadijah", nim: "222301182", statusDikti: "AKTIF", pembayaran: 7875000, keterangan: "" },
+            { no: 74, nama: "Zahra Fajriyyah Nur 'A' llah", nim: "222301185", statusDikti: "AKTIF", pembayaran: 6125000, keterangan: "" },
+            { no: 75, nama: "M Muhammad Fikri Nur Ismawan", nim: "222301103", statusDikti: "NO DATA", pembayaran: 7875000, keterangan: "" },
+            { no: 76, nama: "Fauzan Rejeki", nim: "(NO NIM)", statusDikti: "NO DATA", pembayaran: 6505000, keterangan: "" }
+        ];
+
+        // Variabel global
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        let filteredData = [...mahasiswaData];
+        let sortColumn = 'no';
+        let sortDirection = 'asc';
+
+        // Format angka ke format mata uang Indonesia
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(amount);
+        }
+
+        // Fungsi untuk menampilkan data
+        function displayData() {
+            const tableBody = document.getElementById('dataBody');
+            tableBody.innerHTML = '';
+
+            // Hitung data yang difilter
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+            const paginatedData = filteredData.slice(startIndex, endIndex);
+
+            // Update statistik
+            updateStatistics();
+
+            // Tampilkan data
+            paginatedData.forEach(mahasiswa => {
+                const row = document.createElement('tr');
+                
+                // Tambahkan class status berdasarkan statusDikti
+                if (mahasiswa.statusDikti === 'AKTIF') {
+                    row.classList.add('status-aktif');
+                } else if (mahasiswa.statusDikti === 'NO DATA') {
+                    row.classList.add('status-no-data');
+                } else if (mahasiswa.statusDikti === 'DIKELUARKAN') {
+                    row.classList.add('status-dikeluarkan');
+                }
+                
+                row.innerHTML = `
+                    <td>${mahasiswa.no}</td>
+                    <td>${mahasiswa.nama}</td>
+                    <td>${mahasiswa.nim}</td>
+                    <td>${mahasiswa.statusDikti}</td>
+                    <td>${formatCurrency(mahasiswa.pembayaran)}</td>
+                    <td>${mahasiswa.keterangan || '-'}</td>
+                `;
+                
+                // Tambahkan event listener untuk menampilkan detail
+                row.addEventListener('click', () => {
+                    showDetail(mahasiswa);
+                });
+                
+                tableBody.appendChild(row);
+            });
+
+            // Tampilkan pagination
+            setupPagination();
+        }
+
+        // Fungsi untuk update statistik
+        function updateStatistics() {
+            const total = mahasiswaData.length;
+            const aktif = mahasiswaData.filter(m => m.statusDikti === 'AKTIF').length;
+            const noData = mahasiswaData.filter(m => m.statusDikti === 'NO DATA').length;
+            const dikeluarkan = mahasiswaData.filter(m => m.statusDikti === 'DIKELUARKAN').length;
+            
+            // Hitung total pembayaran
+            const totalPembayaran = mahasiswaData.reduce((sum, m) => sum + m.pembayaran, 0);
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('aktifCount').textContent = aktif;
+            document.getElementById('noDataCount').textContent = noData;
+            document.getElementById('dikeluarkanCount').textContent = dikeluarkan;
+            document.getElementById('totalPembayaran').textContent = formatCurrency(totalPembayaran);
+        }
+
+        // Fungsi untuk setup pagination
+        function setupPagination() {
+            const paginationElement = document.getElementById('pagination');
+            paginationElement.innerHTML = '';
+
+            const pageCount = Math.ceil(filteredData.length / rowsPerPage);
+
+            // Tombol Previous
+            if (currentPage > 1) {
+                const prevButton = document.createElement('button');
+                prevButton.innerText = '←';
+                prevButton.addEventListener('click', () => {
+                    currentPage--;
+                    displayData();
+                });
+                paginationElement.appendChild(prevButton);
+            }
+
+            // Tombol halaman
+            for (let i = 1; i <= pageCount; i++) {
+                const button = document.createElement('button');
+                button.innerText = i;
+                if (i === currentPage) {
+                    button.classList.add('active');
+                }
+                button.addEventListener('click', () => {
+                    currentPage = i;
+                    displayData();
+                });
+                paginationElement.appendChild(button);
+            }
+
+            // Tombol Next
+            if (currentPage < pageCount) {
+                const nextButton = document.createElement('button');
+                nextButton.innerText = '→';
+                nextButton.addEventListener('click', () => {
+                    currentPage++;
+                    displayData();
+                });
+                paginationElement.appendChild(nextButton);
+            }
+        }
+
+        // Fungsi untuk filter data
+        function filterData(filter) {
+            if (filter === 'all') {
+                filteredData = [...mahasiswaData];
+            } else {
+                filteredData = mahasiswaData.filter(mahasiswa => mahasiswa.statusDikti === filter);
+            }
+            currentPage = 1;
+            displayData();
+        }
+
+        // Fungsi untuk search data
+        function searchData(keyword) {
+            keyword = keyword.toLowerCase();
+            filteredData = mahasiswaData.filter(mahasiswa => 
+                mahasiswa.nama.toLowerCase().includes(keyword) || 
+                (mahasiswa.nim && mahasiswa.nim.toLowerCase().includes(keyword)) ||
+                mahasiswa.statusDikti.toLowerCase().includes(keyword) ||
+                (mahasiswa.keterangan && mahasiswa.keterangan.toLowerCase().includes(keyword))
+            );
+            currentPage = 1;
+            displayData();
+        }
+
+        // Fungsi untuk sorting data
+        function sortData(column) {
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+
+            filteredData.sort((a, b) => {
+                let valueA = a[column];
+                let valueB = b[column];
+
+                if (valueA === null) valueA = '';
+                if (valueB === null) valueB = '';
+
+                if (typeof valueA === 'string') valueA = valueA.toLowerCase();
+                if (typeof valueB === 'string') valueB = valueB.toLowerCase();
+
+                if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+                if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            displayData();
+        }
+
+        // Fungsi untuk menampilkan detail mahasiswa
+        function showDetail(mahasiswa) {
+            const modal = document.getElementById('detailModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContent = document.getElementById('modalContent');
+            
+            modalTitle.textContent = mahasiswa.nama;
+            
+            modalContent.innerHTML = `
+                <div class="info-group">
+                    <div class="info-label">No</div>
+                    <div class="info-value">${mahasiswa.no}</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Nama</div>
+                    <div class="info-value">${mahasiswa.nama}</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">NIM</div>
+                    <div class="info-value">${mahasiswa.nim}</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Status DIKTI</div>
+                    <div class="info-value">${mahasiswa.statusDikti}</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Pembayaran</div>
+                    <div class="info-value">${formatCurrency(mahasiswa.pembayaran)}</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Keterangan</div>
+                    <div class="info-value">${mahasiswa.keterangan || '-'}</div>
+                </div>
+            `;
+            
+            modal.style.display = 'flex';
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Tampilkan data awal
+            displayData();
+
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    filterData(button.dataset.filter);
+                });
+            });
+
+            // Search input
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                searchData(e.target.value);
+            });
+
+            // Sort columns
+            document.querySelectorAll('th[data-sort]').forEach(header => {
+                header.addEventListener('click', () => {
+                    sortData(header.dataset.sort);
+                });
+            });
+
+            // Close modal
+            document.getElementById('closeModal').addEventListener('click', () => {
+                document.getElementById('detailModal').style.display = 'none';
+            });
+
+            // Close modal when clicking outside
+            window.addEventListener('click', (e) => {
+                const modal = document.getElementById('detailModal');
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
