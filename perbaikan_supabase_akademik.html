@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Manajemen Akademik</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* CSS akan dipisahkan nanti */
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --info: #4895ef;
+            --warning: #f72585;
+            --danger: #e63946;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --bg-color: #f5f7fa;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        .dark-mode {
+            --bg-color: #121826;
+            --light: #1e293b;
+            --dark: #f8f9fa;
+            --gray: #94a3b8;
+            --light-gray: #334155;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ... (CSS lainnya tetap sama) ... */
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Sistem Akademik</span>
+                </div>
+                <div class="nav">
+                    <div class="nav-item active" data-target="dashboard">Dashboard</div>
+                    <div class="nav-item" data-target="pengajuan">Form Pengajuan</div>
+                    <div class="nav-item" data-target="pembayaran">Konfirmasi Pembayaran</div>
+                    <div class="nav-item" data-target="tugas">Upload Tugas</div>
+                    <div class="nav-item" data-target="aktivitas">Aktivitas</div>
+                </div>
+                <div class="header-actions">
+                    <button class="theme-toggle" id="theme-toggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="btn-auth" id="btn-auth">
+                        <i class="fas fa-user"></i> Login
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container main-content">
+        <!-- Alert Messages -->
+        <div class="alert alert-success" id="alert-success"></div>
+        <div class="alert alert-error" id="alert-error"></div>
+
+        <!-- Konten sections tetap sama -->
+        <!-- ... -->
+    </div>
+
+    <!-- Modal untuk detail -->
+    <div class="modal" id="detail-modal">
+        <!-- ... -->
+    </div>
+
+    <!-- Modal untuk login -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Konfigurasi Supabase
+        const SUPABASE_URL = 'https://weueopblwiliyjqaaqvb.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndldWVvcGJsd2lsaXlqcWFhcXZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTUxODI5MzUsImV4cCI6MjAzMDc1ODkzNX0.9V2I5uFmR2xHkf0QYd4Q5kQ5Q5Q5Q5Q5Q5Q5Q5Q5Q';
+        
+        // Inisialisasi Supabase
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // State aplikasi
+        let state = {
+            user: null,
+            pengajuan: [],
+            pembayaran: [],
+            tugas: [],
+            aktivitas: []
+        };
+
+        // Inisialisasi aplikasi
+        document.addEventListener('DOMContentLoaded', function() {
+            initNavigation();
+            initFileUploads();
+            initForms();
+            initThemeToggle();
+            initAuth();
+            checkAuthState();
+        });
+
+        // Fungsi untuk mengecek status autentikasi
+        async function checkAuthState() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                state.user = session.user;
+                updateAuthUI();
+                loadFromSupabase(); // Memuat data dari Supabase, bukan localStorage
+            } else {
+                showLoginModal();
+            }
+        }
+
+        // Inisialisasi autentikasi
+        function initAuth() {
+            // Event listener untuk tombol login
+            document.getElementById('btn-auth').addEventListener('click', showLoginModal);
+            
+            // Event listener untuk form login
+            document.getElementById('login-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) {
+                    showAlert(error.message, 'error');
+                } else {
+                    state.user = data.user;
+                    updateAuthUI();
+                    hideLoginModal();
+                    loadFromSupabase();
+                }
+            });
+        }
+
+        // Memuat data dari Supabase
+        async function loadFromSupabase() {
+            if (!state.user) return;
+            
+            try {
+                // Load pengajuan
+                const { data: pengajuanData, error: pengajuanError } = await supabase
+                    .from('pengajuan')
+                    .select('*')
+                    .eq('user_id', state.user.id)
+                    .order('created_at', { ascending: false });
+                
+                if (!pengajuanError) state.pengajuan = pengajuanData;
+                
+                // Load pembayaran
+                const { data: pembayaranData, error: pembayaranError } = await supabase
+                    .from('pembayaran')
+                    .select('*')
+                    .eq('user_id', state.user.id)
+                    .order('created_at', { ascending: false });
+                
+                if (!pembayaranError) state.pembayaran = pembayaranData;
+                
+                // Load tugas
+                const { data: tugasData, error: tugasError } = await supabase
+                    .from('tugas')
+                    .select('*')
+                    .eq('user_id', state.user.id)
+                    .order('created_at', { ascending: false });
+                
+                if (!tugasError) state.tugas = tugasData;
+                
+                // Load aktivitas
+                const { data: aktivitasData, error: aktivitasError } = await supabase
+                    .from('aktivitas')
+                    .select('*')
+                    .eq('user_id', state.user.id)
+                    .order('created_at', { ascending: false });
+                
+                if (!aktivitasError) state.aktivitas = aktivitasData;
+                
+                // Update UI
+                updatePengajuanTable();
+                updatePembayaranTable();
+                updateTugasTable();
+                updateAktivitasList();
+                updateDashboard();
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showAlert('Gagal memuat data', 'error');
+            }
+        }
+
+        // Update UI berdasarkan status auth
+        function updateAuthUI() {
+            const authButton = document.getElementById('btn-auth');
+            if (state.user) {
+                authButton.innerHTML = '<i class="fas fa-user"></i> ' + state.user.email;
+                authButton.onclick = handleLogout;
+            } else {
+                authButton.innerHTML = '<i class="fas fa-user"></i> Login';
+                authButton.onclick = showLoginModal;
+            }
+        }
+
+        // Fungsi logout
+        async function handleLogout() {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                showAlert(error.message, 'error');
+            } else {
+                state.user = null;
+                updateAuthUI();
+                showLoginModal();
+            }
+        }
+
+        // Tampilkan modal login
+        function showLoginModal() {
+            document.getElementById('login-modal').style.display = 'flex';
+        }
+
+        // Sembunyikan modal login
+        function hideLoginModal() {
+            document.getElementById('login-modal').style.display = 'none';
+        }
+
+        // Fungsi-fungsi lainnya disesuaikan untuk menggunakan Supabase
+        // ...
+
+        // Contoh perubahan pada handlePengajuan
+        async function handlePengajuan() {
+            if (!state.user) {
+                showAlert('Anda harus login untuk melakukan pengajuan', 'error');
+                showLoginModal();
+                return;
+            }
+
+            const jenis = document.getElementById('jenis-pengajuan').value;
+            const deskripsi = document.getElementById('deskripsi-pengajuan').value;
+            const fileInput = document.getElementById('dokumen-pengajuan');
+            
+            showLoader('pengajuan', true);
+            
+            try {
+                // Upload file jika ada
+                let filePath = null;
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    const fileName = `${Date.now()}-${file.name}`;
+                    const { data, error } = await supabase.storage
+                        .from('dokumen')
+                        .upload(fileName, file);
+                    
+                    if (error) throw error;
+                    filePath = data.path;
+                }
+                
+                // Simpan data ke Supabase
+                const { data, error } = await supabase
+                    .from('pengajuan')
+                    .insert([
+                        {
+                            user_id: state.user.id,
+                            jenis: jenis,
+                            deskripsi: deskripsi,
+                            dokumen_path: filePath,
+                            status: 'Menunggu Review'
+                        }
+                    ])
+                    .select();
+                
+                if (error) throw error;
+                
+                showAlert('Pengajuan berhasil dikirim', 'success');
+                
+                // Tambahkan ke state
+                state.pengajuan.unshift(data[0]);
+                
+                // Update UI
+                updatePengajuanTable();
+                updateDashboard();
+                
+                // Reset form
+                document.getElementById('form-pengajuan').reset();
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert(error.message, 'error');
+            } finally {
+                showLoader('pengajuan', false);
+            }
+        }
+
+        // Implementasi serupa untuk fungsi lainnya
+        // ...
+    </script>
+</body>
+</html>

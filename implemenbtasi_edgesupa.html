@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Manajemen Keanggotaan - Nyampah Bersama</title>
+    <script src="https://unpkg.com/@supabase/supabase-js"></script>
+    <style>
+        :root {
+            --primary-color: #2E8B57;
+            --secondary-color: #3CB371;
+            --accent-color: #F4A460;
+            --light-color: #f9f9f9;
+            --dark-color: #333;
+            --success-color: #2E8B57;
+            --error-color: #DC143C;
+            --warning-color: #FF8C00;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--light-color);
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        }
+        
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+        
+        .tab-container {
+            margin-top: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: #f5f5f5;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+            border: 1px solid #ddd;
+            border-bottom: none;
+        }
+        
+        .tab.active {
+            background: white;
+            font-weight: bold;
+            border-bottom: 2px solid white;
+            margin-bottom: -2px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 8px 5px;
+            transition: background-color 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        button.secondary {
+            background-color: var(--accent-color);
+        }
+        
+        button.secondary:hover {
+            background-color: #E9967A;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 18px 0;
+        }
+        
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        
+        th, td {
+            padding: 14px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .success {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .error {
+            color: var(--error-color);
+            font-weight: bold;
+        }
+        
+        .warning {
+            color: var(--warning-color);
+            font-weight: bold;
+        }
+        
+        .member-card {
+            border-left: 5px solid var(--primary-color);
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: var(--dark-color);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .auth-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .auth-form {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .auth-tab.active {
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Komunitas "Nyampah Bersama"</h1>
+        <p>Sistem Manajemen Keanggotaan Berdasarkan AD/ART</p>
+        <div id="login-section">
+            <div id="user-info" style="display: none;">
+                <p>Anda login sebagai: <span id="user-email"></span></p>
+                <button onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div id="auth-container" class="auth-container">
+        <div class="auth-form">
+            <div class="auth-tabs">
+                <div class="auth-tab active" id="login-tab" onclick="switchAuthTab('login')">Login</div>
+                <div class="auth-tab" id="register-tab" onclick="switchAuthTab('register')">Register</div>
+            </div>
+            
+            <div id="login-form">
+                <h3>Login ke Sistem</h3>
+                <input type="email" id="login-email" placeholder="Email">
+                <input type="password" id="login-password" placeholder="Password">
+                <button onclick="loginWithEmail()">Login</button>
+                <div id="login-result"></div>
+            </div>
+            
+            <div id="register-form" style="display: none;">
+                <h3>Daftar Akun Baru</h3>
+                <input type="text" id="register-name" placeholder="Nama Lengkap">
+                <input type="email" id="register-email" placeholder="Email">
+                <input type="password" id="register-password" placeholder="Password">
+                <input type="password" id="register-confirm-password" placeholder="Konfirmasi Password">
+                <button onclick="registerWithEmail()">Daftar</button>
+                <div id="register-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-content" style="display: none;">
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-label">Total Anggota</div>
+                <div class="stat-number" id="total-members">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Anggota Aktif</div>
+                <div class="stat-number" id="active-members">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Pengurus</div>
+                <div class="stat-number" id="structural-members">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Dewan Pengawas</div>
+                <div class="stat-number" id="supervisory-members">0</div>
+            </div>
+        </div>
+
+        <div class="tab-container">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('registration')">Pendaftaran</div>
+                <div class="tab" onclick="switchTab('management')">Manajemen</div>
+                <div class="tab" onclick="switchTab('activities')">Aktivitas</div>
+                <div class="tab" onclick="switchTab('submissions')">Pengajuan</div>
+            </div>
+
+            <div id="registration-tab" class="tab-content active">
+                <div class="card">
+                    <h2>Pendaftaran Anggota Baru</h2>
+                    <div id="registration-form">
+                        <input type="text" id="name" placeholder="Nama Lengkap">
+                        <input type="number" id="age" placeholder="Usia">
+                        <select id="nationality">
+                            <option value="Indonesian">Warga Negara Indonesia</option>
+                            <option value="Other">Warga Negara Asing</option>
+                        </select>
+                        <input type="email" id="email" placeholder="Email">
+                        <input type="tel" id="phone" placeholder="Nomor Telepon">
+                        <textarea id="address" placeholder="Alamat"></textarea>
+                        <label>
+                            <input type="checkbox" id="agreeTerms"> Saya menyetujui AD/ART dan Kode Etik Komunitas
+                        </label>
+                        <button onclick="registerMember()">Daftar sebagai Anggota</button>
+                    </div>
+                    <div id="registration-result"></div>
+                </div>
+            </div>
+
+            <div id="management-tab" class="tab-content">
+                <div class="container">
+                    <div class="card">
+                        <h2>Status Keanggotaan</h2>
+                        <div id="member-search">
+                            <input type="text" id="searchId" placeholder="ID Anggota">
+                            <button onclick="searchMember()">Cari Anggota</button>
+                        </div>
+                        <div id="member-info" class="member-card"></div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Promosi Keanggotaan</h2>
+                        <div id="promotion-form">
+                            <input type="text" id="promoteId" placeholder="ID Anggota">
+                            <select id="targetType">
+                                <option value="active">Anggota Aktif</option>
+                                <option value="structural">Pengurus</option>
+                                <option value="supervisory">Dewan Pengawas</option>
+                            </select>
+                            <button onclick="promoteMember()">Ajukan Promosi</button>
+                        </div>
+                        <div id="promotion-result"></div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Terminasi Keanggotaan</h2>
+                        <div id="termination-form">
+                            <input type="text" id="terminateId" placeholder="ID Anggota">
+                            <select id="terminationReason">
+                                <option value="resignation">Mengundurkan diri</option>
+                                <option value="violation">Pelanggaran AD/ART</option>
+                                <option value="inactivity">Tidak aktif</option>
+                                <option value="unethical">Perilaku tidak etis</option>
+                            </select>
+                            <button onclick="terminateMember()">Proses Terminasi</button>
+                        </div>
+                        <div id="termination-result"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="activities-tab" class="tab-content">
+                <div class="card">
+                    <h2>Rekam Aktivitas</h2>
+                    <div id="activity-form">
+                        <input type="text" id="activityMemberId" placeholder="ID Anggota">
+                        <input type="text" id="activityTitle" placeholder="Judul Aktivitas">
+                        <textarea id="activityDescription" placeholder="Deskripsi Aktivitas"></textarea>
+                        <input type="date" id="activityDate">
+                        <select id="activityType">
+                            <option value="community">Kegiatan Komunitas</option>
+                            <option value="training">Pelatihan</option>
+                            <option value="environment">Aksi Lingkungan</option>
+                            <option value="meeting">Rapat</option>
+                        </select>
+                        <button onclick="recordActivity()">Rekam Aktivitas</button>
+                    </div>
+                    <div id="activity-result"></div>
+                </div>
+
+                <div class="card">
+                    <h2>Upload Tugas</h2>
+                    <div id="task-form">
+                        <input type="text" id="taskMemberId" placeholder="ID Anggota">
+                        <input type="text" id="taskTitle" placeholder="Judul Tugas">
+                        <textarea id="taskDescription" placeholder="Deskripsi Tugas"></textarea>
+                        <input type="file" id="taskFile">
+                        <button onclick="uploadTask()">Upload Tugas</button>
+                    </div>
+                    <div id="task-result"></div>
+                </div>
+            </div>
+
+            <div id="submissions-tab" class="tab-content">
+                <div class="card">
+                    <h2>Form Pengajuan</h2>
+                    <div id="submission-form">
+                        <input type="text" id="submissionMemberId" placeholder="ID Anggota">
+                        <select id="submissionType">
+                            <option value="proposal">Proposal Kegiatan</option>
+                            <option value="funding">Permohonan Dana</option>
+                            <option value="facility">Peminjaman Fasilitas</option>
+                            <option value="other">Lainnya</option>
+                        </select>
+                        <textarea id="submissionDescription" placeholder="Deskripsi Pengajuan"></textarea>
+                        <input type="file" id="submissionFile">
+                        <button onclick="submitForm()">Ajukan Permohonan</button>
+                    </div>
+                    <div id="submission-result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inisialisasi Supabase
+        const SUPABASE_URL = 'https://weueopblwiliyjqaaqvb.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndldWVvcGJsd2lsaXlqcWFhcXZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU5ODU2NDMsImV4cCI6MjAzMTU2MTY0M30.8a3eifx0fL-XWw5yM-20lJqLdJkMwJzC5H7s7V1l3xE';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // AD/ART Data
+        const adArtData = {
+            community: {
+                name: "Nyampah Bersama",
+                founded: "2023-01-01",
+                vision: "Mewujudkan lingkungan yang bersih dan berkelanjutan melalui ekonomi sirkular",
+                mission: "Mendorong partisipasi masyarakat dalam pengelolaan sampah dan penerapan prinsip ekonomi sirkular"
+            },
+            membership: {
+                types: [
+                    {
+                        name: "Anggota Umum",
+                        code: "regular",
+                        requirements: {
+                            minAge: 17,
+                            nationality: "Indonesian",
+                            agreementToTerms: true,
+                            registrationForm: true
+                        }
+                    },
+                    {
+                        name: "Anggota Aktif",
+                        code: "active",
+                        requirements: {
+                            minDurationAsRegular: 3, // in months
+                            voluntaryParticipation: true,
+                            participationProofRequired: true,
+                            trainingWillingness: true
+                        }
+                    },
+                    {
+                        name: "Pengurus",
+                        code: "structural",
+                        requirements: {
+                            minDurationAsActive: 6, // in months
+                            integrity: true,
+                            leadership: true,
+                            timeCommitment: true,
+                            relevantSkills: true,
+                            selectionProcess: true
+                        }
+                    },
+                    {
+                        name: "Dewan Pengawas",
+                        code: "supervisory",
+                        requirements: {
+                            goodReputation: true,
+                            relevantExpertise: true,
+                            objectivity: true,
+                            independence: true,
+                            noOtherStructuralPosition: true
+                        }
+                    }
+                ]
+            }
+        };
+
+        // State management
+        let members = [];
+        let currentUser = null;
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+
+        // Fungsi untuk autentikasi
+        async function checkAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                document.getElementById('user-email').textContent = currentUser.email;
+                document.getElementById('user-info').style.display = 'block';
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('app-content').style.display = 'block';
+                loadMembers();
+            }
+        }
+
+        async function loginWithEmail() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (!email || !password) {
+                showNotification('Harap isi email dan password', 'error', 'login-result');
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+                
+                if (error) throw error;
+                
+                currentUser = data.user;
+                document.getElementById('user-email').textContent = currentUser.email;
+                document.getElementById('user-info').style.display = 'block';
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('app-content').style.display = 'block';
+                
+                showNotification('Login berhasil!', 'success', 'login-result');
+                loadMembers();
+            } catch (error) {
+                console.error('Error during login:', error);
+                showNotification('Login gagal: ' + error.message, 'error', 'login-result');
+            }
+        }
+
+        async function registerWithEmail() {
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm-password').value;
+            
+            if (!name || !email || !password || !confirmPassword) {
+                showNotification('Harap isi semua field', 'error', 'register-result');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showNotification('Password dan konfirmasi password tidak cocok', 'error', 'register-result');
+                return;
+            }
+            
+            try {
+                // Menggunakan endpoint auth-register yang telah dibuat
+                const response = await fetch('https://weueopblwiliyjqaaqvb.supabase.co/functions/v1/auth-register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        password
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showNotification('Pendaftaran berhasil! Silakan login.', 'success', 'register-result');
+                    // Clear form
+                    document.getElementById('register-name').value = '';
+                    document.getElementById('register-email').value = '';
+                    document.getElementById('register-password').value = '';
+                    document.getElementById('register-confirm-password').value = '';
+                    // Switch to login tab
+                    switchAuthTab('login');
+                } else {
+                    throw new Error(result.error || 'Gagal melakukan pendaftaran');
+                }
+            } catch (error) {
+                console.error('Error during registration:', error);
+                showNotification('Pendaftaran gagal: ' + error.message, 'error', 'register-result');
+            }
+        }
+
+        async function logout() {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                showNotification('Error during logout: ' + error.message, 'error');
+            } else {
+                currentUser = null;
+                document.getElementById('user-info').style.display = 'none';
+                document.getElementById('auth-container').style.display = 'block';
+                document.getElementById('app-content').style.display = 'none';
+            }
+        }
+
+        function switchAuthTab(tab) {
+            if (tab === 'login') {
+                document.getElementById('login-tab').classList.add('active');
+                document.getElementById('register-tab').classList.remove('active');
+                document.getElementById('login-form').style.display = 'block';
+                document.getElementById('register-form').style.display = 'none';
+            } else {
+                document.getElementById('login-tab').classList.remove('active');
+                document.getElementById('register-tab').classList.add('active');
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('register-form').style.display = 'block';
+            }
+        }
+
+        // Fungsi untuk load data anggota
+        async function loadMembers() {
+            try {
+                const { data, error } = await supabase
+                    .from('members')
+                    .select('*');
+                
+                if (error) throw error;
+                
+                members = data;
+                updateStats();
+            } catch (error) {
+                console.error('Error loading members:', error);
+                showNotification('Gagal memuat data anggota', 'error');
+            }
+        }
+
+        // Fungsi untuk update statistik
+        function updateStats() {
+            document.getElementById('total-members').textContent = members.length;
+            document.getElementById('active-members').textContent = members.filter(m => m.type === 'active').length;
+            document.getElementById('structural-members').textContent = members.filter(m => m.type === 'structural').length;
+            document.getElementById('supervisory-members').textContent = members.filter(m => m.type === 'supervisory').length;
+        }
+
+        // Fungsi untuk mendaftarkan anggota baru
+        async function registerMember() {
+            if (!currentUser) {
+                showNotification('Silakan login terlebih dahulu', 'error');
+                return;
+            }
+
+            const name = document.getElementById('name').value;
+            const age = parseInt(document.getElementById('age').value);
+            const nationality = document.getElementById('nationality').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+            const agreeTerms = document.getElementById('agreeTerms').checked;
+
+            // Validasi input
+            if (!name || !age || !email || !phone || !address) {
+                showNotification('Harap isi semua field yang diperlukan', 'error', 'registration-result');
+                return;
+            }
+
+            if (!agreeTerms) {
+                showNotification('Anda harus menyetujui AD/ART dan Kode Etik Komunitas', 'error', 'registration-result');
+                return;
+            }
+
+            if (age < adArtData.membership.types[0].requirements.minAge) {
+                showNotification(`Usia minimal adalah ${adArtData.membership.types[0].requirements.minAge} tahun`, 'error', 'registration-result');
+                return;
+            }
+
+            if (adArtData.membership.types[0].requirements.nationality === 'Indonesian' && nationality !== 'Indonesian') {
+                showNotification('Untuk saat ini, keanggotaan hanya terbuka untuk Warga Negara Indonesia', 'error', 'registration-result');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('members')
+                    .insert([
+                        {
+                            name,
+                            age,
+                            nationality,
+                            email,
+                            phone,
+                            address,
+                            type: 'regular',
+                            status: 'active',
+                            registration_date: new Date().toISOString(),
+                            created_by: currentUser.id
+                        }
+                    ])
+                    .select();
+                
+                if (error) throw error;
+                
+                showNotification(`Pendaftaran berhasil! ID Anggota: ${data[0].id}`, 'success', 'registration-result');
+                
+                // Clear form
+                document.getElementById('name').value = '';
+                document.getElementById('age').value = '';
+                document.getElementById('email').value = '';
+                document.getElementById('phone').value = '';
+                document.getElementById('address').value = '';
+                document.getElementById('agreeTerms').checked = false;
+                
+                loadMembers(); // Reload data anggota
+            } catch (error) {
+                console.error('Error registering member:', error);
+                showNotification('Gagal mendaftarkan anggota: ' + error.message, 'error', 'registration-result');
+            }
+        }
+
+        // Fungsi untuk mencari anggota
+        async function searchMember() {
+            const searchId = document.getElementById('searchId').value;
+            
+            try {
+                const { data, error } = await supabase
+                    .from('members')
+                    .select('*')
+                    .eq('id', searchId);
+                
+                if (error) throw error;
+                
+                if (data.length === 0) {
+                    showNotification('Anggota tidak ditemukan', 'error', 'member-info');
+                    return;
+                }
+                
+                const member = data[0];
+                document.getElementById('member-info').innerHTML = `
+                    <h3>Informasi Anggota</h3>
+                    <p><strong>ID:</strong> ${member.id}</p>
+                    <p><strong>Nama:</strong> ${member.name}</p>
+                    <p><strong>Status:</strong> ${getMemberTypeName(member.type)}</p>
+                    <p><strong>Tanggal Bergabung:</strong> ${formatDate(member.registration_date)}</p>
+                    <p><strong>Email:</strong> ${member.email}</p>
+                    <p><strong>Telepon:</strong> ${member.phone}</p>
+                    <p><strong>Alamat:</strong> ${member.address}</p>
+                `;
+            } catch (error) {
+                console.error('Error searching member:', error);
+                showNotification('Gagal mencari anggota: ' + error.message, 'error', 'member-info');
+            }
+        }
+
+        // Fungsi untuk mempromosikan anggota
+        async function promoteMember() {
+            if (!currentUser) {
+                showNotification('Silakan login terlebih dahulu', 'error');
+                return;
+            }
+
+            const promoteId = document.getElementById('promoteId').value;
+            const targetType = document.getElementById('targetType').value;
+            
+            try {
+                const { data: memberData, error: memberError } = await supabase
+                    .from('members')
+                    .select('*')
+                    .eq('id', promoteId);
+                
+                if (memberError) throw memberError;
+                
+                if (memberData.length === 0) {
+                    showNotification('Anggota tidak ditemukan', 'error', 'promotion-result');
+                    return;
+                }
+                
+                const member = memberData[0];
+                
+                // Check promotion requirements
+                let requirementsMet = true;
+                let message = '';
+                
+                if (targetType === 'active') {
+                    // Check if member has been regular for at least 3 months
+                    const monthsAsRegular = monthDiff(new Date(member.registration_date), new Date());
+                    if (monthsAsRegular < adArtData.membership.types[1].requirements.minDurationAsRegular) {
+                        requirementsMet = false;
+                        message = `Perlu menjadi Anggota Umum minimal ${adArtData.membership.types[1].requirements.minDurationAsRegular} bulan.`;
+                    }
+                } else if (targetType === 'structural') {
+                    // Check if member is active and has been active for at least 6 months
+                    if (member.type !== 'active') {
+                        requirementsMet = false;
+                        message = 'Harus menjadi Anggota Aktif terlebih dahulu.';
+                    } else {
+                        // For simplicity, we assume last_promotion_date is stored
+                        const lastPromotion = member.last_promotion_date || member.registration_date;
+                        const monthsAsActive = monthDiff(new Date(lastPromotion), new Date());
+                        if (monthsAsActive < adArtData.membership.types[2].requirements.minDurationAsActive) {
+                            requirementsMet = false;
+                            message = `Perlu menjadi Anggota Aktif minimal ${adArtData.membership.types[2].requirements.minDurationAsActive} bulan.`;
+                        }
+                    }
+                } else if (targetType === 'supervisory') {
+                    // Check if member meets supervisory requirements
+                    if (member.type === 'structural') {
+                        requirementsMet = false;
+                        message = 'Pengurus tidak dapat merangkap sebagai Dewan Pengawas.';
+                    }
+                }
+                
+                if (requirementsMet) {
+                    const { error: updateError } = await supabase
+                        .from('members')
+                        .update({ 
+                            type: targetType,
+                            last_promotion_date: new Date().toISOString(),
+                            promoted_by: currentUser.id
+                        })
+                        .eq('id', promoteId);
+                    
+                    if (updateError) throw updateError;
+                    
+                    showNotification(`Promosi berhasil! ${member.name} sekarang menjadi ${getMemberTypeName(targetType)}.`, 'success', 'promotion-result');
+                    loadMembers(); // Reload data anggota
+                } else {
+                    showNotification(`Tidak memenuhi syarat: ${message}`, 'error', 'promotion-result');
+                }
+            } catch (error) {
+                console.error('Error promoting member:', error);
+                showNotification('Gagal mempromosikan anggota: ' + error.message, 'error', 'promotion-result');
+            }
+        }
+
+        // Fungsi untuk mengakhiri keanggotaan
+        async function terminateMember() {
+            if (!currentUser) {
+                showNotification('Silakan login terlebih dahulu', 'error');
+                return;
+            }
+
+            const terminateId = document.getElementById('terminateId').value;
+            const reason = document.getElementById('terminationReason').value;
+            
+            try {
+                const { data: memberData, error: memberError } = await supabase
+                    .from('members')
+                    .select('*')
+                    .eq('id', terminateId);
+                
+                if (memberError) throw memberError;
+                
+                if (memberData.length === 0) {
+                    showNotification('Anggota tidak ditemukan', 'error', 'termination-result');
+                    return;
+                }
+                
+                const member = memberData[0];
+                
+                const { error: updateError } = await supabase
+                    .from('members')
+                    .update({ 
+                        status: 'terminated',
+                        termination_date: new Date().toISOString(),
+                        termination_reason: reason,
+                        terminated_by: currentUser.id
+                    })
+                    .eq('id', terminateId);
+                
+                if (updateError) throw updateError;
+                
+                showNotification(`Keanggotaan ${member.name} telah diakhiri. Alasan: ${getTerminationReasonText(reason)}.`, 'success', 'termination-result');
+                loadMembers(); // Reload data anggota
+            } catch (error) {
+                console.error('Error terminating member:', error);
+                showNotification('Gagal mengakhiri keanggotaan: ' + error.message, 'error', 'termination-result');
+            }
+        }
+
+        // Fungsi untuk merekam aktivitas menggunakan edge function
+        async function recordActivity() {
+            if (!currentUser) {
+                showNotification('Silakan login terlebih dahulu', 'error');
+                return;
+            }
+
+            const memberId = document.getElementById('activityMemberId').value;
+            const title = document.getElementById('activityTitle').value;
+            const description = document.getElementById('activityDescription').value;
+            const date = document.getElementById('activityDate').value;
+            const type = document.getElementById('activityType').value;
+
+            if (!memberId || !title || !description || !date) {
+                showNotification('Harap isi semua field yang diperlukan', 'error', 'activity-result');
+                return;
+            }
+
+            try {
+                const response = await fetch('https://weueopblwiliyjqaaqvb.supabase.co/functions/v1/record-aktivitas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        member_id: memberId,
+                        title,
+                        description,
+                        date,
+                        type,
+                        recorded_by: currentUser.id
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showNotification('Aktivitas berhasil direkam', 'success', 'activity-result');
+                    // Clear form
+                    document.getElementById('activityMemberId').value = '';
+                    document.getElementById('activityTitle').value = '';
+                    document.getElementById('activityDescription').value = '';
+                    document.getElementById('activityDate').value = '';
+                } else {
+                    throw new Error(result.error || 'Gagal merekam aktivitas');
+                }
+            } catch (error) {
+                console.error('Error recording activity:', error);
+                showNotification(error.message, 'error', 'activity-result');
+            }
+        }
+
+        // Fungsi untuk upload tugas menggunakan edge function
+        async function uploadTask() {
+            if (!currentUser) {
+                showNotification('Silakan login terlebih dahulu', 'error');
+                return;
+            }
+
+            const memberId = document.getElementById('taskMemberId').value;
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            const fileInput = document.getElementById('taskFile');
+            const file = fileInput.files[0];
+
+            if (!memberId || !title || !description || !file) {
+                showNotification('Harap isi semua field yang diperlukan', 'error', 'task-result');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('member_id', memberId);
+                formData.append('title', title);
+                formData.append('description', description);
+                formData.append('file', file);
+                formData.append('uploaded_by', currentUser.id);
+
+                const response = await fetch('https://weueopblwiliyjqaaqvb.supabase.co/functions/v1/upload-tugas', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showNotification('Tugas berhasil diupload', 'success', 'task-result');
+                    // Clear form
+                    document.getElementById('taskMemberId').value = '';
+                    document.getElementById('taskTitle').value = '';
+                    document.getElementById('taskDescription').value = '';
+                    document.getElementById('taskFile').value = '';
+                } else {
+                    throw new Error(result.error || 'Gagal mengupload tugas');
+                }
+            } catch (error) {
+                console.error('Error uploading task:', error);
+                showNotification(error.message, 'error', 'task-result');
+            }
+        }
+
+        // Fungsi untuk mengajukan form menggunakan edge function
+        async function submitForm() {
+            if (!currentUser) {
+                showNotification('Silakan login terlebih dahulu', 'error');
+                return;
+            }
+
+            const memberId = document.getElementById('submissionMemberId').value;
+            const type = document.getElementById('submissionType').value;
+            const description = document.getElementById('submissionDescription').value;
+            const fileInput = document.getElementById('submissionFile');
+            const file = fileInput.files[0];
+
+            if (!memberId || !type || !description) {
+                showNotification('Harap isi semua field yang diperlukan', 'error', 'submission-result');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('member_id', memberId);
+                formData.append('type', type);
+                formData.append('description', description);
+                formData.append('submitted_by', currentUser.id);
+                if (file) {
+                    formData.append('file', file);
+                }
+
+                const response = await fetch('https://weueopblwiliyjqaaqvb.supabase.co/functions/v1/form-pengajuan', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showNotification('Pengajuan berhasil dikirim', 'success', 'submission-result');
+                    // Clear form
+                    document.getElementById('submissionMemberId').value = '';
+                    document.getElementById('submissionDescription').value = '';
+                    document.getElementById('submissionFile').value = '';
+                } else {
+                    throw new Error(result.error || 'Gagal mengirim pengajuan');
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                showNotification(error.message, 'error', 'submission-result');
+            }
+        }
+
+        // Helper functions
+        function showNotification(message, type, elementId = null) {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.className = type;
+            
+            if (elementId) {
+                const element = document.getElementById(elementId);
+                element.innerHTML = '';
+                element.appendChild(notification);
+            } else {
+                // Show as toast notification
+                notification.style.position = 'fixed';
+                notification.style.top = '20px';
+                notification.style.right = '20px';
+                notification.style.padding = '10px 15px';
+                notification.style.borderRadius = '5px';
+                notification.style.zIndex = '1000';
+                
+                if (type === 'success') {
+                    notification.style.backgroundColor = '#d4edda';
+                    notification.style.color = '#155724';
+                    notification.style.border = '1px solid #c3e6cb';
+                } else if (type === 'error') {
+                    notification.style.backgroundColor = '#f8d7da';
+                    notification.style.color = '#721c24';
+                    notification.style.border = '1px solid #f5c6cb';
+                }
+                
+                document.body.appendChild(notification);
+                
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 3000);
+            }
+        }
+
+        function getMemberTypeName(typeCode) {
+            const type = adArtData.membership.types.find(t => t.code === typeCode);
+            return type ? type.name : 'Tidak Dikenal';
+        }
+
+        function getTerminationReasonText(reasonCode) {
+            const reasons = {
+                'resignation': 'Mengundurkan diri',
+                'violation': 'Pelanggaran AD/ART',
+                'inactivity': 'Tidak aktif',
+                'unethical': 'Perilaku tidak etis'
+            };
+            return reasons[reasonCode] || 'Alasan tidak diketahui';
+        }
+
+        function monthDiff(dateFrom, dateTo) {
+            return dateTo.getMonth() - dateFrom.getMonth() + 
+                (12 * (dateTo.getFullYear() - dateFrom.getFullYear()));
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Etherscan Verify Ownership — Sign Message Helper</title>
+  <style>
+    :root{--bg:#0b0b0b;--card:#121212;--muted:#9aa0a6;--border:#2a2a2a;--txt:#e8eaed;--accent:#25a0ff}
+    *{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu}
+    .wrap{max-width:900px;margin:24px auto;padding:16px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px}
+    h1,h2{margin:0 0 10px} h1{font-size:22px} h2{font-size:18px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    button{background:#1b1b1b;border:1px solid var(--border);color:var(--txt);padding:10px 14px;border-radius:10px;cursor:pointer}
+    button.primary{background:var(--accent);border-color:#0f6fbf;color:#fff}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .muted{color:var(--muted);font-size:.9rem}
+    textarea, input[type=text]{width:100%;background:#0f0f0f;color:var(--txt);border:1px solid var(--border);border-radius:12px;padding:12px}
+    pre{white-space:pre-wrap;word-break:break-all;background:#0f0f0f;border:1px solid var(--border);padding:12px;border-radius:12px}
+    .pill{padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:#0f0f0f}
+    .grid{display:grid;gap:12px}
+    .copy{font-size:.85rem;padding:6px 10px}
+    a{color:#8ab4f8;text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Sign Etherscan “Verify Address Ownership” Message</h1>
+      <p class="muted">Use this helper to connect your wallet, paste the message shown on Etherscan, sign it, and copy the signature to submit back on Etherscan.</p>
+      <div class="row">
+        <button id="btn-connect" class="primary">① Connect Wallet</button>
+        <span id="addr" class="pill muted">Not connected</span>
+        <span id="net" class="pill muted"></span>
+      </div>
+    </div>
+
+    <div class="card grid">
+      <h2>② Paste Etherscan Message</h2>
+      <textarea id="msg" rows="6" placeholder="[etherscan.io YYYY/MM/DD HH:mm:ss] I hereby verify that I am the owner/creator of the address [0x...]"></textarea>
+      <div class="row">
+        <button id="btn-sign">③ Sign Message</button>
+        <span id="status" class="muted">Ready.</span>
+      </div>
+    </div>
+
+    <div class="card grid">
+      <h2>④ Copy Signature Hash</h2>
+      <pre id="sig">—</pre>
+      <div class="row">
+        <button id="btn-copy" class="copy">Copy Signature</button>
+        <span class="muted">Paste this into Etherscan’s <b>Signature Hash</b> field, then click <b>Verify Ownership</b>.</span>
+      </div>
+      <p class="muted">Tip: This is a message signature (EIP-191 personal_sign). It does not move funds.</p>
+    </div>
+
+    <div class="card grid">
+      <h2>Troubleshooting</h2>
+      <ul>
+        <li>If the wallet pops up with “Sign Message”, check the content matches Etherscan’s text.</li>
+        <li>Mobile wallets: open this page inside your wallet’s browser (Coinbase Wallet / MetaMask).</li>
+        <li>Different chain is fine — signing does not depend on network.</li>
+      </ul>
+    </div>
+  </div>
+
+  <script type="module">
+    import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.min.js";
+
+    const elAddr = document.getElementById('addr');
+    const elNet  = document.getElementById('net');
+    const elMsg  = document.getElementById('msg');
+    const elSig  = document.getElementById('sig');
+    const elStatus = document.getElementById('status');
+    const btnConnect = document.getElementById('btn-connect');
+    const btnSign = document.getElementById('btn-sign');
+    const btnCopy = document.getElementById('btn-copy');
+
+    let provider, signer, address;
+
+    function setStatus(t){ elStatus.textContent = t; }
+
+    function short(addr){
+      if (!addr) return '';
+      return addr.slice(0,6)+'…'+addr.slice(-4);
+    }
+
+    async function connect(){
+      try{
+        if(!window.ethereum){
+          alert('No wallet detected. Open this page in Coinbase/MetaMask browser or install a wallet.');
+          return;
+        }
+        provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send('eth_requestAccounts', []);
+        signer = await provider.getSigner();
+        address = await signer.getAddress();
+        elAddr.textContent = short(address);
+        elAddr.classList.remove('muted');
+        try{
+          const n = await provider.getNetwork();
+          elNet.textContent = 'ChainId: '+ Number(n.chainId);
+        }catch{}
+        setStatus('Connected.');
+      }catch(e){
+        setStatus('Connect failed: '+(e.shortMessage||e.message));
+        console.error(e);
+      }
+    }
+
+    async function sign(){
+      try{
+        if(!signer) return setStatus('Please connect wallet first.');
+        const message = elMsg.value.trim();
+        if(!message) return setStatus('Paste the exact message from Etherscan first.');
+        setStatus('Awaiting wallet signature…');
+        const signature = await signer.signMessage(message);
+        elSig.textContent = signature;
+        setStatus('Signed ✔ Copy the signature and paste on Etherscan.');
+      }catch(e){
+        setStatus('Sign cancelled or failed: '+(e.shortMessage||e.message));
+        console.error(e);
+      }
+    }
+
+    async function copySig(){
+      const s = elSig.textContent;
+      if(!s || s==='—') return;
+      try{
+        await navigator.clipboard.writeText(s);
+        setStatus('Signature copied to clipboard.');
+      }catch{
+        setStatus('Copy failed. Manually select and copy the signature.');
+      }
+    }
+
+    btnConnect.addEventListener('click', connect);
+    btnSign.addEventListener('click', sign);
+    btnCopy.addEventListener('click', copySig);
+  </script>
+</body>
+</html>

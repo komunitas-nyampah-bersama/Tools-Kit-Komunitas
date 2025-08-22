@@ -6,6 +6,7 @@
     <title>Sistem Manajemen Akademik</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+/* CSS akan dipisahkan nanti */
         :root {
             --primary: #4361ee;
             --secondary: #3f37c9;
@@ -433,9 +434,14 @@
                     <div class="nav-item" data-target="tugas">Upload Tugas</div>
                     <div class="nav-item" data-target="aktivitas">Aktivitas</div>
                 </div>
-                <button class="theme-toggle" id="theme-toggle">
-                    <i class="fas fa-moon"></i>
-                </button>
+                <div class="header-actions">
+                    <button class="theme-toggle" id="theme-toggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="btn-auth" id="btn-auth">
+                        <i class="fas fa-user"></i> Login
+                    </button>
+                </div>
             </div>
         </div>
     </header>
@@ -732,12 +738,25 @@
 
     <!-- Modal untuk detail -->
     <div class="modal" id="detail-modal">
+        <!-- ... -->
+    </div>
+
+    <!-- Modal untuk login -->
+    <div class="modal" id="login-modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
-            <h2 id="modal-title">Detail</h2>
-            <div id="modal-content">
-                <!-- Konten modal akan diisi oleh JavaScript -->
-            </div>
+            <h2>Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
         </div>
     </div>
 

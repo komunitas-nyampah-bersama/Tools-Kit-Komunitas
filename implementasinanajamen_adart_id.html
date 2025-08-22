@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Manajemen Keanggotaan - Nyampah Bersama</title>
+    <style>
+        :root {
+            --primary-color: #2E8B57;
+            --secondary-color: #3CB371;
+            --accent-color: #8FBC8F;
+            --dark-color: #1c3b2a;
+            --light-color: #f9f9f9;
+            --error-color: #DC143C;
+            --warning-color: #FF8C00;
+            --success-color: #2E8B57;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-color);
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+        
+        .nav-item {
+            display: block;
+            padding: 10px 15px;
+            margin: 5px 0;
+            background-color: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-item:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        .success {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .error {
+            color: var(--error-color);
+            font-weight: bold;
+        }
+        
+        .warning {
+            color: var(--warning-color);
+            font-weight: bold;
+        }
+        
+        .member-card {
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .tab-container {
+            margin-top: 20px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            background: #f2f2f2;
+            border: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .activity-feed {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .activity-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Komunitas "Nyampah Bersama"</h1>
+        <p>Sistem Manajemen Keanggotaan Berdasarkan AD/ART</p>
+    </header>
+
+    <div class="container">
+        <div class="dashboard">
+            <div class="sidebar">
+                <h2>Menu Navigasi</h2>
+                <a href="#" class="nav-item" onclick="showTab('dashboard')">Dashboard</a>
+                <a href="#" class="nav-item" onclick="showTab('registration')">Pendaftaran Anggota</a>
+                <a href="#" class="nav-item" onclick="showTab('members')">Daftar Anggota</a>
+                <a href="#" class="nav-item" onclick="showTab('promotion')">Promosi Keanggotaan</a>
+                <a href="#" class="nav-item" onclick="showTab('termination')">Terminasi Keanggotaan</a>
+                <a href="#" class="nav-item" onclick="showTab('activities')">Aktivitas & Tugas</a>
+                <a href="#" class="nav-item" onclick="showTab('submissions')">Pengajuan</a>
+                
+                <h2>Status Sistem</h2>
+                <div id="system-status">
+                    <p>Koneksi Supabase: <span id="supabase-status" class="success">Terhubung</span></p>
+                    <p>Total Anggota: <span id="total-members">0</span></p>
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <!-- Dashboard Tab -->
+                <div id="dashboard" class="tab-content active">
+                    <h2>Dashboard</h2>
+                    <div class="card">
+                        <h3>Selamat Datang di Sistem Manajemen Keanggotaan</h3>
+                        <p>Sistem ini membantu mengelola keanggotaan Komunitas "Nyampah Bersama" sesuai AD/ART yang berlaku.</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Aktivitas Terbaru</h3>
+                        <div id="recent-activities" class="activity-feed">
+                            <p>Memuat aktivitas...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Statistik Keanggotaan</h3>
+                        <div id="membership-stats">
+                            <p>Anggota Umum: <span id="regular-count">0</span></p>
+                            <p>Anggota Aktif: <span id="active-count">0</span></p>
+                            <p>Pengurus: <span id="structural-count">0</span></p>
+                            <p>Dewan Pengawas: <span id="supervisory-count">0</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Registration Tab -->
+                <div id="registration" class="tab-content">
+                    <h2>Pendaftaran Anggota Baru</h2>
+                    <div class="card">
+                        <div id="registration-form">
+                            <input type="text" id="name" placeholder="Nama Lengkap">
+                            <input type="number" id="age" placeholder="Usia">
+                            <select id="nationality">
+                                <option value="Indonesian">Warga Negara Indonesia</option>
+                                <option value="Other">Warga Negara Asing</option>
+                            </select>
+                            <input type="email" id="email" placeholder="Email">
+                            <input type="tel" id="phone" placeholder="Nomor Telepon">
+                            <textarea id="address" placeholder="Alamat"></textarea>
+                            <label>
+                                <input type="checkbox" id="agreeTerms"> Saya menyetujui AD/ART dan Kode Etik Komunitas
+                            </label>
+                            <button onclick="registerMember()">Daftar sebagai Anggota</button>
+                        </div>
+                        <div id="registration-result"></div>
+                    </div>
+                </div>
+                
+                <!-- Members Tab -->
+                <div id="members" class="tab-content">
+                    <h2>Daftar Anggota</h2>
+                    <div class="card">
+                        <input type="text" id="search-member" placeholder="Cari anggota berdasarkan nama atau ID">
+                        <button onclick="searchMembers()">Cari</button>
+                        <div id="members-list">
+                            <p>Memuat daftar anggota...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Other tabs will be implemented similarly -->
+                <div id="promotion" class="tab-content">
+                    <h2>Promosi Keanggotaan</h2>
+                    <div class="card">
+                        <p>Fitur ini akan segera hadir.</p>
+                    </div>
+                </div>
+                
+                <div id="termination" class="tab-content">
+                    <h2>Terminasi Keanggotaan</h2>
+                    <div class="card">
+                        <p>Fitur ini akan segera hadir.</p>
+                    </div>
+                </div>
+                
+                <div id="activities" class="tab-content">
+                    <h2>Aktivitas & Tugas</h2>
+                    <div class="card">
+                        <p>Fitur ini akan segera hadir.</p>
+                    </div>
+                </div>
+                
+                <div id="submissions" class="tab-content">
+                    <h2>Pengajuan</h2>
+                    <div class="card">
+                        <p>Fitur ini akan segera hadir.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Konfigurasi URL Supabase Edge Functions
+        const SUPABASE_FUNCTIONS = {
+            recordActivity: 'https://weueopblwiliyjqaaqvb.supabase.co/functions/v1/record-aktivitas',
+            uploadTask: 'https://weueopblwiliyjqaaqvb.supabase.co/functions/v1/upload-tugas',
+            submitForm: 'https://weueopblwiliyjqaaqvb.supabase.co/functions/v1/form-pengajuan'
+        };
+
+        // AD/ART Data
+        const adArtData = {
+            community: {
+                name: "Nyampah Bersama",
+                founded: "2023-01-01",
+                vision: "Mewujudkan lingkungan yang bersih dan berkelanjutan melalui ekonomi sirkular",
+                mission: "Mendorong partisipasi masyarakat dalam pengelolaan sampah dan penerapan prinsip ekonomi sirkular"
+            },
+            membership: {
+                types: [
+                    {
+                        name: "Anggota Umum",
+                        code: "regular",
+                        requirements: {
+                            minAge: 17,
+                            nationality: "Indonesian",
+                            agreementToTerms: true,
+                            registrationForm: true
+                        }
+                    },
+                    {
+                        name: "Anggota Aktif",
+                        code: "active",
+                        requirements: {
+                            minDurationAsRegular: 3, // in months
+                            voluntaryParticipation: true,
+                            participationProofRequired: true,
+                            trainingWillingness: true
+                        }
+                    },
+                    {
+                        name: "Pengurus",
+                        code: "structural",
+                        requirements: {
+                            minDurationAsActive: 6, // in months
+                            integrity: true,
+                            leadership: true,
+                            timeCommitment: true,
+                            relevantSkills: true,
+                            selectionProcess: true
+                        }
+                    },
+                    {
+                        name: "Dewan Pengawas",
+                        code: "supervisory",
+                        requirements: {
+                            goodReputation: true,
+                            relevantExpertise: true,
+                            objectivity: true,
+                            independence: true,
+                            noOtherStructuralPosition: true
+                        }
+                    }
+                ]
+            }
+        };
+
+        // Simulasi database (dalam produksi akan diganti dengan Supabase)
+        let members = JSON.parse(localStorage.getItem('members')) || [];
+        let activities = JSON.parse(localStorage.getItem('activities')) || [];
+        let nextId = parseInt(localStorage.getItem('nextId')) || 1;
+
+        // Fungsi untuk menampilkan tab yang dipilih
+        function showTab(tabId) {
+            // Sembunyikan semua tab
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Tampilkan tab yang dipilih
+            document.getElementById(tabId).classList.add('active');
+            
+            // Jika tab anggota ditampilkan, muat daftar anggota
+            if (tabId === 'members') {
+                loadMembersList();
+            }
+            
+            // Jika tab dashboard ditampilkan, muat statistik
+            if (tabId === 'dashboard') {
+                updateDashboard();
+            }
+        }
+
+        // Fungsi untuk memperbarui dashboard
+        function updateDashboard() {
+            // Hitung statistik keanggotaan
+            const regularCount = members.filter(m => m.type === 'regular').length;
+            const activeCount = members.filter(m => m.type === 'active').length;
+            const structuralCount = members.filter(m => m.type === 'structural').length;
+            const supervisoryCount = members.filter(m => m.type === 'supervisory').length;
+            
+            // Perbarui UI
+            document.getElementById('regular-count').textContent = regularCount;
+            document.getElementById('active-count').textContent = activeCount;
+            document.getElementById('structural-count').textContent = structuralCount;
+            document.getElementById('supervisory-count').textContent = supervisoryCount;
+            document.getElementById('total-members').textContent = members.length;
+            
+            // Tampilkan aktivitas terbaru
+            displayRecentActivities();
+        }
+
+        // Fungsi untuk menampilkan aktivitas terbaru
+        function displayRecentActivities() {
+            const activityFeed = document.getElementById('recent-activities');
+            const recentActivities = activities.slice(-5).reverse();
+            
+            if (recentActivities.length === 0) {
+                activityFeed.innerHTML = '<p>Belum ada aktivitas tercatat.</p>';
+                return;
+            }
+            
+            activityFeed.innerHTML = '';
+            recentActivities.forEach(activity => {
+                const activityItem = document.createElement('div');
+                activityItem.className = 'activity-item';
+                activityItem.innerHTML = `
+                    <strong>${activity.type}</strong>: ${activity.details}
+                    <br><small>${new Date(activity.timestamp).toLocaleString('id-ID')}</small>
+                `;
+                activityFeed.appendChild(activityItem);
+            });
+        }
+
+        // Fungsi untuk mencatat aktivitas
+        async function recordActivity(type, details) {
+            const activity = {
+                id: activities.length + 1,
+                type,
+                details,
+                timestamp: new Date().toISOString()
+            };
+            
+            activities.push(activity);
+            localStorage.setItem('activities', JSON.stringify(activities));
+            
+            // Kirim ke Supabase (dalam implementasi nyata)
+            try {
+                const response = await fetch(SUPABASE_FUNCTIONS.recordActivity, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(activity)
+                });
+                
+                if (!response.ok) {
+                    console.error('Gagal mengirim aktivitas ke Supabase');
+                }
+            } catch (error) {
+                console.error('Error mengirim aktivitas:', error);
+            }
+            
+            // Perbarui UI jika di dashboard
+            if (document.getElementById('dashboard').classList.contains('active')) {
+                displayRecentActivities();
+            }
+        }
+
+        // Fungsi untuk mendaftarkan anggota baru
+        async function registerMember() {
+            const name = document.getElementById('name').value;
+            const age = parseInt(document.getElementById('age').value);
+            const nationality = document.getElementById('nationality').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+            const agreeTerms = document.getElementById('agreeTerms').checked;
+            const resultDiv = document.getElementById('registration-result');
+
+            // Validasi input
+            if (!name || !age || !email || !phone || !address) {
+                showResult(resultDiv, 'error', 'Harap isi semua field yang diperlukan.');
+                return;
+            }
+
+            if (!agreeTerms) {
+                showResult(resultDiv, 'error', 'Anda harus menyetujui AD/ART dan Kode Etik Komunitas.');
+                return;
+            }
+
+            if (age < adArtData.membership.types[0].requirements.minAge) {
+                showResult(resultDiv, 'error', `Usia minimal adalah ${adArtData.membership.types[0].requirements.minAge} tahun.`);
+                return;
+            }
+
+            if (adArtData.membership.types[0].requirements.nationality === 'Indonesian' && nationality !== 'Indonesian') {
+                showResult(resultDiv, 'error', 'Untuk saat ini, keanggotaan hanya terbuka untuk Warga Negara Indonesia.');
+                return;
+            }
+
+            // Buat anggota baru
+            const newMember = {
+                id: nextId++,
+                name,
+                age,
+                nationality,
+                email,
+                phone,
+                address,
+                registrationDate: new Date().toISOString(),
+                type: 'regular',
+                status: 'active'
+            };
+
+            // Simpan secara lokal
+            members.push(newMember);
+            localStorage.setItem('members', JSON.stringify(members));
+            localStorage.setItem('nextId', nextId);
+            
+            // Catat aktivitas
+            await recordActivity('Pendaftaran', `Anggota baru: ${name} (ID: ${newMember.id})`);
+            
+            // Kirim data ke Supabase (dalam implementasi nyata)
+            try {
+                // Simulasikan pengiriman formulir pendaftaran ke Supabase
+                const response = await fetch(SUPABASE_FUNCTIONS.submitForm, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        formType: 'registration',
+                        formData: newMember
+                    })
+                });
+                
+                if (!response.ok) {
+                    console.error('Gagal mengirim formulir pendaftaran ke Supabase');
+                }
+            } catch (error) {
+                console.error('Error mengirim formulir:', error);
+            }
+
+            showResult(resultDiv, 'success', 
+                `Pendaftaran berhasil! ID Anggota Anda: ${newMember.id}. Anda terdaftar sebagai ${adArtData.membership.types[0].name}.`);
+            
+            // Reset formulir
+            document.getElementById('registration-form').reset();
+            
+            // Perbarui dashboard
+            updateDashboard();
+        }
+
+        // Fungsi untuk memuat daftar anggota
+        function loadMembersList() {
+            const membersList = document.getElementById('members-list');
+            membersList.innerHTML = '';
+            
+            if (members.length === 0) {
+                membersList.innerHTML = '<p>Belum ada anggota terdaftar.</p>';
+                return;
+            }
+            
+            const table = document.createElement('table');
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nama</th>
+                        <th>Usia</th>
+                        <th>Status</th>
+                        <th>Tanggal Bergabung</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${members.map(member => `
+                        <tr>
+                            <td>${member.id}</td>
+                            <td>${member.name}</td>
+                            <td>${member.age}</td>
+                            <td>${getMemberTypeName(member.type)}</td>
+                            <td>${formatDate(member.registrationDate)}</td>
+                            <td>
+                                <button onclick="viewMemberDetails(${member.id})">Lihat</button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            `;
+            
+            membersList.appendChild(table);
+        }
+
+        // Fungsi untuk mencari anggota
+        function searchMembers() {
+            const searchTerm = document.getElementById('search-member').value.toLowerCase();
+            const filteredMembers = members.filter(member => 
+                member.name.toLowerCase().includes(searchTerm) || 
+                member.id.toString().includes(searchTerm)
+            );
+            
+            const membersList = document.getElementById('members-list');
+            membersList.innerHTML = '';
+            
+            if (filteredMembers.length === 0) {
+                membersList.innerHTML = '<p>Tidak ada anggota yang sesuai dengan pencarian.</p>';
+                return;
+            }
+            
+            const table = document.createElement('table');
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nama</th>
+                        <th>Usia</th>
+                        <th>Status</th>
+                        <th>Tanggal Bergabung</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${filteredMembers.map(member => `
+                        <tr>
+                            <td>${member.id}</td>
+                            <td>${member.name}</td>
+                            <td>${member.age}</td>
+                            <td>${getMemberTypeName(member.type)}</td>
+                            <td>${formatDate(member.registrationDate)}</td>
+                            <td>
+                                <button onclick="viewMemberDetails(${member.id})">Lihat</button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            `;
+            
+            membersList.appendChild(table);
+        }
+
+        // Fungsi untuk melihat detail anggota
+        function viewMemberDetails(memberId) {
+            const member = members.find(m => m.id === memberId);
+            if (!member) return;
+            
+            // Buat modal atau tampilkan di bagian detail
+            const membersList = document.getElementById('members-list');
+            membersList.innerHTML = `
+                <div class="member-card">
+                    <h3>Detail Anggota</h3>
+                    <p><strong>ID:</strong> ${member.id}</p>
+                    <p><strong>Nama:</strong> ${member.name}</p>
+                    <p><strong>Usia:</strong> ${member.age}</p>
+                    <p><strong>Email:</strong> ${member.email}</p>
+                    <p><strong>Telepon:</strong> ${member.phone}</p>
+                    <p><strong>Alamat:</strong> ${member.address}</p>
+                    <p><strong>Status Keanggotaan:</strong> ${getMemberTypeName(member.type)}</p>
+                    <p><strong>Tanggal Bergabung:</strong> ${formatDate(member.registrationDate)}</p>
+                    <button onclick="loadMembersList()">Kembali ke Daftar</button>
+                    <button onclick="promoteMember(${member.id})">Promosikan</button>
+                    <button onclick="initiateTermination(${member.id})">Proses Terminasi</button>
+                </div>
+            `;
+        }
+
+        // Fungsi helper untuk menampilkan hasil operasi
+        function showResult(element, type, message) {
+            element.innerHTML = `<p class="${type}">${message}</p>`;
+            setTimeout(() => {
+                element.innerHTML = '';
+            }, 5000);
+        }
+
+        // Fungsi helper untuk mendapatkan nama tipe anggota
+        function getMemberTypeName(typeCode) {
+            const type = adArtData.membership.types.find(t => t.code === typeCode);
+            return type ? type.name : 'Tidak Dikenal';
+        }
+
+        // Fungsi helper untuk memformat tanggal
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('id-ID', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // Inisialisasi
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDashboard();
+            loadMembersList();
+        });
+    </script>
+</body>
+</html>

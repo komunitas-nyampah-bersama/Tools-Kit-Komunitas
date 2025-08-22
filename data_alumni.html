@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Alumni</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #2c3e50, #4a6491);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .filter-btn {
+            padding: 8px 15px;
+            background-color: #f1f1f1;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .filter-btn.active {
+            background-color: #4a6491;
+            color: white;
+        }
+        
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            flex: 1;
+            min-width: 200px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #4a6491;
+        }
+        
+        .stat-card .count {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            background-color: #4a6491;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        th:hover {
+            background-color: #3a547e;
+        }
+        
+        th::after {
+            content: '';
+            display: inline-block;
+            margin-left: 5px;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid #fff;
+            opacity: 0.5;
+        }
+        
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .status-aktif {
+            background-color: #e8f5e9;
+        }
+        
+        .status-pindah {
+            background-color: #fff8e1;
+        }
+        
+        .status-lulus {
+            background-color: #e3f2fd;
+        }
+        
+        .status-belum-nim {
+            background-color: #f5f5f5;
+        }
+        
+        .keterangan {
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+        
+        .pagination button {
+            padding: 8px 12px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .pagination button.active {
+            background-color: #4a6491;
+            color: white;
+            border-color: #4a6491;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #777;
+        }
+        
+        @media (max-width: 768px) {
+            th:nth-child(3),
+            td:nth-child(3) {
+                display: none;
+            }
+            
+            .keterangan {
+                max-width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Data Alumni</h1>
+            <p>Daftar lengkap informasi alumni beserta status terkini</p>
+        </header>
+        
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Cari nama atau NIM...">
+            </div>
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">Semua</button>
+                <button class="filter-btn" data-filter="aktif">Aktif</button>
+                <button class="filter-btn" data-filter="pindah">Pindah</button>
+                <button class="filter-btn" data-filter="lulus">Lulus</button>
+                <button class="filter-btn" data-filter="belum-nim">Belum NIM</button>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Alumni</h3>
+                <div class="count" id="totalCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Aktif</h3>
+                <div class="count" id="aktifCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Pindah</h3>
+                <div class="count" id="pindahCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Lulus</h3>
+                <div class="count" id="lulusCount">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Belum NIM</h3>
+                <div class="count" id="belumNimCount">0</div>
+            </div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th data-sort="nama">Nama</th>
+                    <th data-sort="nim">NIM</th>
+                    <th data-sort="status">Status</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody id="dataBody">
+                <!-- Data akan diisi oleh JavaScript -->
+            </tbody>
+        </table>
+        
+        <div class="pagination" id="pagination">
+            <!-- Pagination akan diisi oleh JavaScript -->
+        </div>
+        
+        <footer>
+            <p>&copy; 2023 Data Alumni. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Data alumni dari JSON yang diberikan
+        const alumniData = [
+          {
+            "nama": "Muhammad Habiburrohman",
+            "nim": "222301105",
+            "keterangan": "pindah TA 2020 (202101452) sudah lulus"
+          },
+          {
+            "nama": "Abdul Hakim Al Farrasi",
+            "nim": "222301001",
+            "keterangan": "pindah TA 2020 (1516010265) sudah lulus, NIM HILANG"
+          },
+          {
+            "nama": "Rizki Syahdan Fergiawan",
+            "nim": "222301194",
+            "keterangan": "pindah TA 2020 (BELUM DAPAT NIM)"
+          },
+          {
+            "nama": "Thoriqul Huda",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "Daud Wisnu Murti",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "Fauzan Rejeki",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "Muhammad Fikri Nur Ismawan",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "Rita Zahara",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "Satria Muhammad Ulung",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "Urai Achmad Kurniawan",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "Adilyansyah Rahman",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "Jehimma Enha Najlanada",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "MUHAMMAD IHSAN ILAHI ZHAHIR",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "Nadhrotul Munayyah",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "NAFA'ATHUS SHOLIHAH",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "NURAZIZAH",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "Ramla Kilbarin",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "RIHHADATUL AISY",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "Sasan Abdul Yunus",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "Zayba Aqilah Livianra",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "A. Rahim",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "Agus Hariyadi",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "Amalia Shinta Dewi",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "Wiji Abadi",
+            "nim": null,
+            "keterangan": "BELUM DAPAT NIM"
+          },
+          {
+            "nama": "Deny Sigit Prasetiya",
+            "nim": "222301037",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Abida Tazkiya Azzahroh",
+            "nim": "222301004",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Adnan Abdul Malik",
+            "nim": "222301006",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Agus Kurniadi",
+            "nim": "222301008",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Agus Saripudin",
+            "nim": "222301009",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Agustiawan",
+            "nim": "222301010",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Ahmad Qonit Abdullah",
+            "nim": "222301014",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Aisyah Na'Im Qibtiyah",
+            "nim": "222301016",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Aldi Pratama",
+            "nim": "222301017",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Alfat Aldorian Meizandy",
+            "nim": "222301018",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Ali Zakia Mahmudi",
+            "nim": "222301019",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Aliya Putri Adila",
+            "nim": "222301020",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Almira Miftaqul Rauufi Prasetya",
+            "nim": "222301021",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Annisa Firdaus",
+            "nim": "222301022",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Arini Husnul Lafifah",
+            "nim": "222301023",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Aura Azzahraah Paramadeta",
+            "nim": "222301027",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Balqis Syafiqoh",
+            "nim": "222301030",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Bambang Pujianto",
+            "nim": "222301031",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Belinda Pertiwi",
+            "nim": "222301032",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Dede Nuriman",
+            "nim": "222301035",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Dzakifachruddin Masyhur",
+            "nim": "222301039",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Edi Prayitno",
+            "nim": "222301040",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Eka Pebriyanti",
+            "nim": "222301041",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Fatimah Zahra",
+            "nim": "222301049",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Febry Jutany Rusvianto",
+            "nim": "222301052",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Fikriyana Sukanto",
+            "nim": "222301054",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Fratasik Hippy",
+            "nim": "222301055",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Habibah",
+            "nim": "222301056",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Hasanah",
+            "nim": "222301058",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Huwaida",
+            "nim": "222301061",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Ibnu Mahfudin",
+            "nim": "222301062",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Ibnu Qoyyim Al Jauziyah",
+            "nim": "222301063",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Iffah Ummu Labibah",
+            "nim": "222301064",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Ihsanudin",
+            "nim": "222301065",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Ilda Yanti",
+            "nim": "222301066",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Imam Zarkasi",
+            "nim": "222301068",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Isa Akhmad",
+            "nim": "222301069",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Lailatul Qodriyah Kautsari",
+            "nim": "222301077",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Maritza Shafiyah Callysta",
+            "nim": "222301083",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Mariyah",
+            "nim": "222301084",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Marzuki",
+            "nim": "222301085",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Masmudi",
+            "nim": "222301087",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Mhd. Kemal Thariq",
+            "nim": "222301089",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Muh. Alawi Machfudz",
+            "nim": "222301093",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Muhammad Faisal Aji",
+            "nim": "222301102",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Muhammad Ghifari",
+            "nim": "222301104",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Muhammad Muhaimi",
+            "nim": "222301108",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Naila Elfarisdah",
+            "nim": "222301112",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Nirmala Erya Vania",
+            "nim": "222301114",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Nisa Amalia",
+            "nim": "222301115",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Nur Aisyah Putri",
+            "nim": "222301116",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Olivia Rosalia Putri",
+            "nim": "222301121",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Pipih Ratnasari",
+            "nim": "222301122",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Putri Annajma Khairani Hafid",
+            "nim": "222301123",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Putri Azzahra",
+            "nim": "222301124",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Qoonitatudz Dzakiyah",
+            "nim": "222301126",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Rahmat Fajri",
+            "nim": "222301127",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Ramadhani",
+            "nim": "222301129",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Rifdah Ulya Kautsari",
+            "nim": "222301132",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Robani",
+            "nim": "222301138",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Rofiqa",
+            "nim": "222301139",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Rohman",
+            "nim": "222301140",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Rosid Ridho",
+            "nim": "222301141",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Salma Khairunnisa",
+            "nim": "222301144",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Siti Alimah",
+            "nim": "222301144",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Siti Alini",
+            "nim": "222301150",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Siti Hajar",
+            "nim": "222301154",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Syifa Zhafira",
+            "nim": "222301167",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Syumaila Al Husna",
+            "nim": "222301168",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Umaimah",
+            "nim": "222301174",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Uswaty Choirunnisa'",
+            "nim": "222301179",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Uti Ma'Rifah",
+            "nim": "222301180",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Wella Ratu Khadijah",
+            "nim": "222301182",
+            "keterangan": "AKTIF"
+          },
+          {
+            "nama": "Zahra Fajriyyah Nur 'A'llah",
+            "nim": "222301185",
+            "keterangan": "AKTIF"
+          }
+        ];
+
+        // Menambahkan status ke setiap data
+        alumniData.forEach(alumni => {
+            if (alumni.keterangan.includes('AKTIF')) {
+                alumni.status = 'aktif';
+            } else if (alumni.keterangan.includes('pindah')) {
+                if (alumni.keterangan.includes('sudah lulus')) {
+                    alumni.status = 'lulus';
+                } else {
+                    alumni.status = 'pindah';
+                }
+            } else if (alumni.nim === null || alumni.keterangan.includes('BELUM DAPAT NIM')) {
+                alumni.status = 'belum-nim';
+            } else {
+                alumni.status = 'unknown';
+            }
+        });
+
+        // Variabel global
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        let filteredData = [...alumniData];
+        let sortColumn = 'nama';
+        let sortDirection = 'asc';
+
+        // Fungsi untuk menampilkan data
+        function displayData() {
+            const tableBody = document.getElementById('dataBody');
+            tableBody.innerHTML = '';
+
+            // Hitung data yang difilter
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+            const paginatedData = filteredData.slice(startIndex, endIndex);
+
+            // Update statistik
+            updateStatistics();
+
+            // Tampilkan data
+            paginatedData.forEach(alumni => {
+                const row = document.createElement('tr');
+                row.classList.add(`status-${alumni.status}`);
+                
+                row.innerHTML = `
+                    <td>${alumni.nama}</td>
+                    <td>${alumni.nim || '-'}</td>
+                    <td>${alumni.status.toUpperCase()}</td>
+                    <td class="keterangan" title="${alumni.keterangan}">${alumni.keterangan}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+
+            // Tampilkan pagination
+            setupPagination();
+        }
+
+        // Fungsi untuk update statistik
+        function updateStatistics() {
+            const total = alumniData.length;
+            const aktif = alumniData.filter(a => a.status === 'aktif').length;
+            const pindah = alumniData.filter(a => a.status === 'pindah').length;
+            const lulus = alumniData.filter(a => a.status === 'lulus').length;
+            const belumNim = alumniData.filter(a => a.status === 'belum-nim').length;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('aktifCount').textContent = aktif;
+            document.getElementById('pindahCount').textContent = pindah;
+            document.getElementById('lulusCount').textContent = lulus;
+            document.getElementById('belumNimCount').textContent = belumNim;
+        }
+
+        // Fungsi untuk setup pagination
+        function setupPagination() {
+            const paginationElement = document.getElementById('pagination');
+            paginationElement.innerHTML = '';
+
+            const pageCount = Math.ceil(filteredData.length / rowsPerPage);
+
+            // Tombol Previous
+            if (currentPage > 1) {
+                const prevButton = document.createElement('button');
+                prevButton.innerText = '←';
+                prevButton.addEventListener('click', () => {
+                    currentPage--;
+                    displayData();
+                });
+                paginationElement.appendChild(prevButton);
+            }
+
+            // Tombol halaman
+            for (let i = 1; i <= pageCount; i++) {
+                const button = document.createElement('button');
+                button.innerText = i;
+                if (i === currentPage) {
+                    button.classList.add('active');
+                }
+                button.addEventListener('click', () => {
+                    currentPage = i;
+                    displayData();
+                });
+                paginationElement.appendChild(button);
+            }
+
+            // Tombol Next
+            if (currentPage < pageCount) {
+                const nextButton = document.createElement('button');
+                nextButton.innerText = '→';
+                nextButton.addEventListener('click', () => {
+                    currentPage++;
+                    displayData();
+                });
+                paginationElement.appendChild(nextButton);
+            }
+        }
+
+        // Fungsi untuk filter data
+        function filterData(filter) {
+            if (filter === 'all') {
+                filteredData = [...alumniData];
+            } else {
+                filteredData = alumniData.filter(alumni => alumni.status === filter);
+            }
+            currentPage = 1;
+            displayData();
+        }
+
+        // Fungsi untuk search data
+        function searchData(keyword) {
+            keyword = keyword.toLowerCase();
+            filteredData = alumniData.filter(alumni => 
+                alumni.nama.toLowerCase().includes(keyword) || 
+                (alumni.nim && alumni.nim.toLowerCase().includes(keyword)) ||
+                alumni.keterangan.toLowerCase().includes(keyword)
+            );
+            currentPage = 1;
+            displayData();
+        }
+
+        // Fungsi untuk sorting data
+        function sortData(column) {
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+
+            filteredData.sort((a, b) => {
+                let valueA = a[column];
+                let valueB = b[column];
+
+                if (valueA === null) valueA = '';
+                if (valueB === null) valueB = '';
+
+                if (typeof valueA === 'string') valueA = valueA.toLowerCase();
+                if (typeof valueB === 'string') valueB = valueB.toLowerCase();
+
+                if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+                if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            displayData();
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Tampilkan data awal
+            displayData();
+
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    filterData(button.dataset.filter);
+                });
+            });
+
+            // Search input
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                searchData(e.target.value);
+            });
+
+            // Sort columns
+            document.querySelectorAll('th[data-sort]').forEach(header => {
+                header.addEventListener('click', () => {
+                    sortData(header.dataset.sort);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

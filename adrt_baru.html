@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Manajemen Keanggotaan - Nyampah Bersama</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        header {
+            background-color: #2E8B57;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2, h3 {
+            color: #2E8B57;
+        }
+        button {
+            background-color: #2E8B57;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #3CB371;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .success {
+            color: #2E8B57;
+            font-weight: bold;
+        }
+        .error {
+            color: #DC143C;
+            font-weight: bold;
+        }
+        .member-card {
+            border-left: 4px solid #2E8B57;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Komunitas "Nyampah Bersama"</h1>
+        <p>Sistem Manajemen Keanggotaan Berdasarkan AD/ART</p>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>Pendaftaran Anggota Baru</h2>
+            <div id="registration-form">
+                <input type="text" id="name" placeholder="Nama Lengkap">
+                <input type="number" id="age" placeholder="Usia">
+                <select id="nationality">
+                    <option value="Indonesian">Warga Negara Indonesia</option>
+                    <option value="Other">Warga Negara Asing</option>
+                </select>
+                <input type="email" id="email" placeholder="Email">
+                <input type="tel" id="phone" placeholder="Nomor Telepon">
+                <label>
+                    <input type="checkbox" id="agreeTerms"> Saya menyetujui AD/ART dan Kode Etik Komunitas
+                </label>
+                <button onclick="registerMember()">Daftar sebagai Anggota</button>
+            </div>
+            <div id="registration-result"></div>
+        </div>
+
+        <div class="card">
+            <h2>Status Keanggotaan</h2>
+            <div id="member-search">
+                <input type="text" id="searchId" placeholder="ID Anggota">
+                <button onclick="searchMember()">Cari Anggota</button>
+            </div>
+            <div id="member-info" class="member-card"></div>
+        </div>
+
+        <div class="card">
+            <h2>Promosi Keanggotaan</h2>
+            <div id="promotion-form">
+                <input type="text" id="promoteId" placeholder="ID Anggota">
+                <select id="targetType">
+                    <option value="active">Anggota Aktif</option>
+                    <option value="structural">Pengurus</option>
+                    <option value="supervisory">Dewan Pengawas</option>
+                </select>
+                <button onclick="promoteMember()">Ajukan Promosi</button>
+            </div>
+            <div id="promotion-result"></div>
+        </div>
+
+        <div class="card">
+            <h2>Terminasi Keanggotaan</h2>
+            <div id="termination-form">
+                <input type="text" id="terminateId" placeholder="ID Anggota">
+                <select id="terminationReason">
+                    <option value="resignation">Mengundurkan diri</option>
+                    <option value="violation">Pelanggaran AD/ART</option>
+                    <option value="inactivity">Tidak aktif</option>
+                    <option value="unethical">Perilaku tidak etis</option>
+                </select>
+                <button onclick="terminateMember()">Proses Terminasi</button>
+            </div>
+            <div id="termination-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // AD/ART Data
+        const adArtData = {
+            community: {
+                name: "Nyampah Bersama",
+                founded: "2023-01-01",
+                vision: "Mewujudkan lingkungan yang bersih dan berkelanjutan melalui ekonomi sirkular",
+                mission: "Mendorong partisipasi masyarakat dalam pengelolaan sampah dan penerapan prinsip ekonomi sirkular"
+            },
+            membership: {
+                types: [
+                    {
+                        name: "Anggota Umum",
+                        code: "regular",
+                        requirements: {
+                            minAge: 17,
+                            nationality: "Indonesian",
+                            agreementToTerms: true,
+                            registrationForm: true
+                        }
+                    },
+                    {
+                        name: "Anggota Aktif",
+                        code: "active",
+                        requirements: {
+                            minDurationAsRegular: 3, // in months
+                            voluntaryParticipation: true,
+                            participationProofRequired: true,
+                            trainingWillingness: true
+                        }
+                    },
+                    {
+                        name: "Pengurus",
+                        code: "structural",
+                        requirements: {
+                            minDurationAsActive: 6, // in months
+                            integrity: true,
+                            leadership: true,
+                            timeCommitment: true,
+                            relevantSkills: true,
+                            selectionProcess: true
+                        }
+                    },
+                    {
+                        name: "Dewan Pengawas",
+                        code: "supervisory",
+                        requirements: {
+                            goodReputation: true,
+                            relevantExpertise: true,
+                            objectivity: true,
+                            independence: true,
+                            noOtherStructuralPosition: true
+                        }
+                    }
+                ]
+            }
+        };
+
+        // Simulated database
+        let members = JSON.parse(localStorage.getItem('members')) || [];
+        let nextId = parseInt(localStorage.getItem('nextId')) || 1;
+
+        // Member class
+        class CommunityMember {
+            constructor(id, name, age, nationality, email, phone) {
+                this.id = id;
+                this.name = name;
+                this.age = age;
+                this.nationality = nationality;
+                this.email = email;
+                this.phone = phone;
+                this.registrationDate = new Date();
+                this.type = 'regular';
+                this.status = 'active';
+                this.lastPromotionDate = null;
+                this.participationHistory = [];
+            }
+        }
+
+        // Function to register a new member
+        function registerMember() {
+            const name = document.getElementById('name').value;
+            const age = parseInt(document.getElementById('age').value);
+            const nationality = document.getElementById('nationality').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const agreeTerms = document.getElementById('agreeTerms').checked;
+
+            // Validate input
+            if (!name || !age || !email || !phone) {
+                showResult('registration-result', 'error', 'Harap isi semua field yang diperlukan.');
+                return;
+            }
+
+            if (!agreeTerms) {
+                showResult('registration-result', 'error', 'Anda harus menyetujui AD/ART dan Kode Etik Komunitas.');
+                return;
+            }
+
+            if (age < adArtData.membership.types[0].requirements.minAge) {
+                showResult('registration-result', 'error', `Usia minimal adalah ${adArtData.membership.types[0].requirements.minAge} tahun.`);
+                return;
+            }
+
+            if (adArtData.membership.types[0].requirements.nationality === 'Indonesian' && nationality !== 'Indonesian') {
+                showResult('registration-result', 'error', 'Untuk saat ini, keanggotaan hanya terbuka untuk Warga Negara Indonesia.');
+                return;
+            }
+
+            // Create new member
+            const newMember = new CommunityMember(nextId++, name, age, nationality, email, phone);
+            members.push(newMember);
+            
+            // Save to localStorage
+            localStorage.setItem('members', JSON.stringify(members));
+            localStorage.setItem('nextId', nextId);
+
+            showResult('registration-result', 'success', 
+                `Pendaftaran berhasil! ID Anggota Anda: ${newMember.id}. Anda terdaftar sebagai ${adArtData.membership.types[0].name}.`);
+        }
+
+        // Function to search for a member
+        function searchMember() {
+            const searchId = document.getElementById('searchId').value;
+            const member = members.find(m => m.id == searchId);
+            const memberInfo = document.getElementById('member-info');
+            
+            if (!member) {
+                memberInfo.innerHTML = '<p class="error">Anggota tidak ditemukan.</p>';
+                return;
+            }
+            
+            memberInfo.innerHTML = `
+                <h3>Informasi Anggota</h3>
+                <p><strong>ID:</strong> ${member.id}</p>
+                <p><strong>Nama:</strong> ${member.name}</p>
+                <p><strong>Status:</strong> ${getMemberTypeName(member.type)}</p>
+                <p><strong>Tanggal Bergabung:</strong> ${formatDate(member.registrationDate)}</p>
+                <p><strong>Email:</strong> ${member.email}</p>
+                <p><strong>Telepon:</strong> ${member.phone}</p>
+            `;
+        }
+
+        // Function to promote a member
+        function promoteMember() {
+            const promoteId = document.getElementById('promoteId').value;
+            const targetType = document.getElementById('targetType').value;
+            const member = members.find(m => m.id == promoteId);
+            
+            if (!member) {
+                showResult('promotion-result', 'error', 'Anggota tidak ditemukan.');
+                return;
+            }
+            
+            // Check promotion requirements
+            let requirementsMet = true;
+            let message = '';
+            
+            if (targetType === 'active') {
+                // Check if member has been regular for at least 3 months
+                const monthsAsRegular = monthDiff(member.registrationDate, new Date());
+                if (monthsAsRegular < adArtData.membership.types[1].requirements.minDurationAsRegular) {
+                    requirementsMet = false;
+                    message = `Perlu menjadi Anggota Umum minimal ${adArtData.membership.types[1].requirements.minDurationAsRegular} bulan.`;
+                }
+            } else if (targetType === 'structural') {
+                // Check if member is active and has been active for at least 6 months
+                if (member.type !== 'active') {
+                    requirementsMet = false;
+                    message = 'Harus menjadi Anggota Aktif terlebih dahulu.';
+                } else {
+                    const monthsAsActive = monthDiff(member.lastPromotionDate, new Date());
+                    if (monthsAsActive < adArtData.membership.types[2].requirements.minDurationAsActive) {
+                        requirementsMet = false;
+                        message = `Perlu menjadi Anggota Aktif minimal ${adArtData.membership.types[2].requirements.minDurationAsActive} bulan.`;
+                    }
+                }
+            } else if (targetType === 'supervisory') {
+                // Check if member meets supervisory requirements
+                if (member.type === 'structural') {
+                    requirementsMet = false;
+                    message = 'Pengurus tidak dapat merangkap sebagai Dewan Pengawas.';
+                }
+            }
+            
+            if (requirementsMet) {
+                member.type = targetType;
+                member.lastPromotionDate = new Date();
+                localStorage.setItem('members', JSON.stringify(members));
+                showResult('promotion-result', 'success', 
+                    `Promosi berhasil! ${member.name} sekarang menjadi ${getMemberTypeName(targetType)}.`);
+            } else {
+                showResult('promotion-result', 'error', 
+                    `Tidak memenuhi syarat: ${message}`);
+            }
+        }
+
+        // Function to terminate a member
+        function terminateMember() {
+            const terminateId = document.getElementById('terminateId').value;
+            const reason = document.getElementById('terminationReason').value;
+            const member = members.find(m => m.id == terminateId);
+            
+            if (!member) {
+                showResult('termination-result', 'error', 'Anggota tidak ditemukan.');
+                return;
+            }
+            
+            member.status = 'terminated';
+            member.terminationDate = new Date();
+            member.terminationReason = reason;
+            
+            localStorage.setItem('members', JSON.stringify(members));
+            
+            showResult('termination-result', 'success', 
+                `Keanggotaan ${member.name} telah diakhiri. Alasan: ${getTerminationReasonText(reason)}.`);
+        }
+
+        // Helper functions
+        function showResult(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<p class="${type}">${message}</p>`;
+        }
+
+        function getMemberTypeName(typeCode) {
+            const type = adArtData.membership.types.find(t => t.code === typeCode);
+            return type ? type.name : 'Tidak Dikenal';
+        }
+
+        function getTerminationReasonText(reasonCode) {
+            const reasons = {
+                'resignation': 'Mengundurkan diri',
+                'violation': 'Pelanggaran AD/ART',
+                'inactivity': 'Tidak aktif',
+                'unethical': 'Perilaku tidak etis'
+            };
+            return reasons[reasonCode] || 'Alasan tidak diketahui';
+        }
+
+        function monthDiff(dateFrom, dateTo) {
+            return dateTo.getMonth() - dateFrom.getMonth() + 
+                (12 * (dateTo.getFullYear() - dateFrom.getFullYear()));
+        }
+
+        function formatDate(date) {
+            return new Date(date).toLocaleDateString('id-ID', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+    </script>
+</body>
+</html>
